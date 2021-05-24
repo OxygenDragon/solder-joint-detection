@@ -1,0 +1,9 @@
+data/*
+annotation/*
+slice_img/
+slice_annotation/
+PCB/training_set/*
+PCB/valid_set/*
+PCB/cfg/weights/yolov4-tiny-custom_*
+PCB/cfg/yolov4-tiny.conv.29
+*.ipynb_checkpoints/
