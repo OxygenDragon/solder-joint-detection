@@ -1,0 +1,7 @@
+himax_we1_sdk
+image_gen_linux
+third_party
+tensorflow/lite/micro/tools/make/downloads
+*.o
+*.elf
+*.map
