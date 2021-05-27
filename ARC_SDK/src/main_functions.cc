@@ -46,7 +46,7 @@ void setup() {
   static tflite::MicroErrorReporter micro_error_reporter;
   error_reporter = &micro_error_reporter;
 
-  model = tflite::GetModel(yolov3_tiny_test_float16_tflite);
+  model = tflite::GetModel(model_tflite);
   if (model->version() != TFLITE_SCHEMA_VERSION) {
     TF_LITE_REPORT_ERROR(error_reporter,
                          "Model provided is schema version %d not equal "
@@ -55,18 +55,15 @@ void setup() {
     return;
   }
 
-  static tflite::MicroMutableOpResolver<11> micro_op_resolver;
+  static tflite::MicroMutableOpResolver<8> micro_op_resolver;
   micro_op_resolver.AddConv2D();
   micro_op_resolver.AddRelu();
-  micro_op_resolver.AddMaxPool2D();
+  micro_op_resolver.AddDepthwiseConv2D();
+  micro_op_resolver.AddFullyConnected();
+  micro_op_resolver.AddPad();
   micro_op_resolver.AddAdd();
-  micro_op_resolver.AddSub();
-  micro_op_resolver.AddMul();
-  micro_op_resolver.AddLogistic();
-  micro_op_resolver.AddSplit();
-  micro_op_resolver.AddConcatenation();
-  micro_op_resolver.AddReshape();
-  micro_op_resolver.AddStridedSlice();
+  micro_op_resolver.AddMean();
+  micro_op_resolver.AddSoftmax();
 
 
   static tflite::MicroInterpreter static_interpreter(
@@ -97,33 +94,3 @@ void loop() {
   TfLiteTensor* output = interpreter->output(0);
   RespondToDetection(error_reporter, (int8_t*)output->data.uint8);
 }
-
-/*
-output detail
-[{
-  'name': 'Identity', 
-  'index': 168, 
-  'shape': array([   1, 2535,   80], dtype=int32), 
-  'shape_signature': array([ 1, -1, 80], dtype=int32), 
-  'dtype': <class 'numpy.float32'>, 
-  'quantization': (0.0, 0),
-  'quantization_parameters': {'scales': array([], dtype=float32), 
-  'zero_points': array([], dtype=int32), 
-  'quantized_dimension': 0}, 
-  'sparsity_parameters': {}
-}, 
-{
-  'name': 'Identity_1', 
-  'index': 189, 
-  'shape': array([   1, 2535,    4], dtype=int32), 
-  'shape_signature': array([ 1, -1,  4], dtype=int32), 
-  'dtype': <class 'numpy.float32'>,
-  'quantization': (0.0, 0), 
-  'quantization_parameters': {'scales': array([], dtype=float32), 
-  'zero_points': array([], dtype=int32), 
-  'quantized_dimension': 0}, 
-  'sparsity_parameters': {}
-  }
-]
-
-*/

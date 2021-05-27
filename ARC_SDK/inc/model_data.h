@@ -16,7 +16,7 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_MICRO_EXAMPLES_HANDWRITING_MODEL_DATA_H_
 #define TENSORFLOW_LITE_MICRO_EXAMPLES_HANDWRITING_MODEL_DATA_H_
 
-extern const unsigned char yolov3_tiny_test_float16_tflite[];
-extern const int yolov3_tiny_test_float16_tflite_len;
+extern const unsigned char model_tflite[];
+extern const int model_tflite_len;
 
 #endif  // TENSORFLOW_LITE_MICRO_EXAMPLES_HANDWRITING_MODEL_DATA_H_

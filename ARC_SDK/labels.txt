@@ -1,0 +1,6 @@
+0 Normal
+1 Cold joint
+2 Insufficient
+3 Short
+4 Overheat
+5 Too much
