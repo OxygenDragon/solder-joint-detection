@@ -22,26 +22,38 @@ uint8_t score_output[kCategoryCount];
 }
 void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
 
+  char* className = [
+      "Normal", 
+      "Cold joint", 
+      "Insufficient", 
+      "Short",
+      "Overheat", 
+      "Too much"
+  ];
+
   int maxIndex = -1;
   int maxScore = -255;
 
   TF_LITE_REPORT_ERROR(error_reporter, "number");
   for (int i = 0; i < kCategoryCount; i++) {
-    // TF_LITE_REPORT_ERROR(error_reporter, "[%d]:%d,",i,score[i]);
+    TF_LITE_REPORT_ERROR(error_reporter, "[%s]: %d,", className[i], score[0]);
     if (score[i] > 0 && maxScore < score[i] ) {
       maxScore = score[i];
       maxIndex = i;
     }
-
     score_output[i] = score[i] + 128;
   }
 
-  if(maxIndex!= -1)
-    TF_LITE_REPORT_ERROR(error_reporter, "result:%d",maxIndex);
-  else
-    TF_LITE_REPORT_ERROR(error_reporter, "result:unknown");
+  TF_LITE_REPORT_ERROR(error_reporter, "===== Inference Result =====");
+  if(maxIndex != -1) {
+    TF_LITE_REPORT_ERROR(error_reporter, "Result:     %s", className[maxIndex]);
+    TF_LITE_REPORT_ERROR(error_reporter, "Confidence: %d", maxScore);
+  } else {
+    TF_LITE_REPORT_ERROR(error_reporter, "Result: unknown");
+  }
+  TF_LITE_REPORT_ERROR(error_reporter, "============================");
 
   //send result data out through SPI
   hx_drv_spim_send((uint32_t)score_output, sizeof(int8_t) * kCategoryCount,
-                   SPI_TYPE_META_DATA);
+      SPI_TYPE_META_DATA);
 }
