@@ -20,10 +20,6 @@ limitations under the License.
 
 namespace {
 hx_drv_sensor_image_config_t g_pimg_config;
-
-// quantization parameters
-double kScale = 0.00392117677256465;
-double kZeroPoint = -128;
 }
 
 TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
@@ -50,12 +46,16 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
   hx_drv_image_rescale((uint8_t*)g_pimg_config.raw_address,
                        g_pimg_config.img_width, g_pimg_config.img_height,
                        image_data, image_width, image_height);
+  
+  // quantization parameters
+  double kScale = 0.00392117677256465;
+  int32_t kZeroPoint = -128;
 
   float pixel;
   for (int i = 0; i < 128*128; ++i) { // 128x128
-    pixel = float(image_data[i] + 128) / 255; // normalize
-    pixel = pixel / kScale + kZeroPoint;
-    image_data[i] = (int8_t)pixel;
+    pixel = float(int32_t(image_data[i]) + 128) / 255; // normalize
+    float npixel = pixel / kScale + kZeroPoint;
+    image_data[i] = (int8_t)npixel;
   }
   
   return kTfLiteOk;
