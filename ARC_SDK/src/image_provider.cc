@@ -14,12 +14,16 @@ limitations under the License.
 ==============================================================================*/
 
 #include "image_provider.h"
-
 #include "model_settings.h"
 #include "hx_drv_tflm.h"
+#include "string"
 
 namespace {
 hx_drv_sensor_image_config_t g_pimg_config;
+
+// quantization parameters
+double kScale = 0.00392117677256465;
+double kZeroPoint = -128;
 }
 
 TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
@@ -30,11 +34,9 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
     if (hx_drv_sensor_initial(&g_pimg_config) != HX_DRV_LIB_PASS) {
       return kTfLiteError;
     }
-
     if (hx_drv_spim_init() != HX_DRV_LIB_PASS) {
       return kTfLiteError;
     }
-
     is_initialized = true;
   }
 
@@ -49,5 +51,12 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
                        g_pimg_config.img_width, g_pimg_config.img_height,
                        image_data, image_width, image_height);
 
+  float pixel;
+  for (int i = 0; i < 128*128; ++i) { // 128x128
+    pixel = float(image_data[i] + 128) / 255; // normalize
+    pixel = pixel / kScale + kZeroPoint;
+    image_data[i] = (int8_t)pixel;
+  }
+  
   return kTfLiteOk;
 }

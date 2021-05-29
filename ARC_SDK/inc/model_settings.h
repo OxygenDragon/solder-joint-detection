@@ -18,7 +18,7 @@ limitations under the License.
 
 constexpr int kNumCols = 128;
 constexpr int kNumRows = 128;
-constexpr int kNumChannels = 3;
+constexpr int kNumChannels = 1;
 
 constexpr int kMaxImageSize = kNumCols * kNumRows * kNumChannels;
 

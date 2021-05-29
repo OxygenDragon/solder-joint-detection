@@ -32,12 +32,12 @@ tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* input = nullptr;
 
 // An area of memory to use for input, output, and intermediate arrays.
-constexpr int kTensorArenaSize = 136 * 1024;
+constexpr int kTensorArenaSize = 300 * 1024;
 #if (defined(__GNUC__) || defined(__GNUG__)) && !defined (__CCAC__)
-static uint8_t tensor_arena[kTensorArenaSize] __attribute__((section(".tensor_arena")));
+alignas(16) static uint8_t tensor_arena[kTensorArenaSize] __attribute__((section(".tensor_arena")));
 #else
 #pragma Bss(".tensor_arena")
-static uint8_t tensor_arena[kTensorArenaSize];
+alignas(16) static uint8_t tensor_arena[kTensorArenaSize];
 #pragma Bss()
 #endif // if defined (_GNUC_) && !defined (_CCAC_)
 }  // namespace
@@ -55,15 +55,17 @@ void setup() {
     return;
   }
 
-  static tflite::MicroMutableOpResolver<8> micro_op_resolver;
+  static tflite::MicroMutableOpResolver<10> micro_op_resolver;
   micro_op_resolver.AddConv2D();
+  micro_op_resolver.AddMaxPool2D();
   micro_op_resolver.AddRelu();
-  micro_op_resolver.AddDepthwiseConv2D();
+  micro_op_resolver.AddMul();
   micro_op_resolver.AddFullyConnected();
-  micro_op_resolver.AddPad();
+  micro_op_resolver.AddReshape();
   micro_op_resolver.AddAdd();
-  micro_op_resolver.AddMean();
   micro_op_resolver.AddSoftmax();
+  micro_op_resolver.AddQuantize();
+  micro_op_resolver.AddDequantize();
 
 
   static tflite::MicroInterpreter static_interpreter(
@@ -75,12 +77,11 @@ void setup() {
     TF_LITE_REPORT_ERROR(error_reporter, "AllocateTensors() failed");
     return;
   }
-
   input = interpreter->input(0);
 }
 
 void loop() {
-  // Get image from provider, which is image sensor in handwriting case.
+  // Get image from provider
   if (kTfLiteOk != GetImage(error_reporter, kNumCols, kNumRows, kNumChannels,
                             input->data.int8)) {
     TF_LITE_REPORT_ERROR(error_reporter, "Image capture failed.");

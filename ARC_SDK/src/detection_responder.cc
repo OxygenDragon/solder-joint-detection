@@ -16,28 +16,29 @@ limitations under the License.
 #include "detection_responder.h"
 #include "model_settings.h"
 #include "hx_drv_tflm.h"
-
+#include "string"
 namespace {
 uint8_t score_output[kCategoryCount];
+char* className[] = {
+  "Normal", 
+  "Cold joint", 
+  "Insufficient", 
+  "Short",
+  "Overheat", 
+  "Too much"
+};
 }
 void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
 
-  char* className = [
-      "Normal", 
-      "Cold joint", 
-      "Insufficient", 
-      "Short",
-      "Overheat", 
-      "Too much"
-  ];
-
   int maxIndex = -1;
   int maxScore = -255;
-
-  TF_LITE_REPORT_ERROR(error_reporter, "number");
+  
+  TF_LITE_REPORT_ERROR(error_reporter, "\n\n");
   for (int i = 0; i < kCategoryCount; i++) {
-    TF_LITE_REPORT_ERROR(error_reporter, "[%s]: %d,", className[i], score[0]);
-    if (score[i] > 0 && maxScore < score[i] ) {
+    char str[30];
+    sprintf(str, "[%s]: %d,", className[i], score[i]);
+    TF_LITE_REPORT_ERROR(error_reporter, str);
+    if (score[i] > 0 && maxScore < score[i]) {
       maxScore = score[i];
       maxIndex = i;
     }
@@ -46,8 +47,12 @@ void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
 
   TF_LITE_REPORT_ERROR(error_reporter, "===== Inference Result =====");
   if(maxIndex != -1) {
-    TF_LITE_REPORT_ERROR(error_reporter, "Result:     %s", className[maxIndex]);
-    TF_LITE_REPORT_ERROR(error_reporter, "Confidence: %d", maxScore);
+    char class_str[30];
+    char score_str[30];
+    sprintf(class_str, "Result:     %s", className[maxIndex]);
+    sprintf(score_str, "Confidence: %d", maxScore);
+    TF_LITE_REPORT_ERROR(error_reporter, class_str);
+    TF_LITE_REPORT_ERROR(error_reporter, score_str);
   } else {
     TF_LITE_REPORT_ERROR(error_reporter, "Result: unknown");
   }
