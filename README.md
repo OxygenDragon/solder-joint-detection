@@ -2,11 +2,12 @@
 
 ## Introduction
 
-We are group of NCKU CASLab. We are dedicate to solve the problem of solder joint classification problem. Since inspecting solder joint defect by human eye is time consuming and low efficiency, we propose a classification system with edge AI. Our device could work only with power supply and need no computer or laptop connect to it.  Hope this AIoT device could solve the problem people long encountered.
+We are group from NCKU CASLab. We are dedicate to solve the problem of solder joint classification problem. Since inspecting solder joint defect by human eye is time consuming and low efficiency, we propose a classification system with edge AI. Our device could work only with power supply and need no computer or laptop connect to it.  Hope this AIoT device could solve the problem people long encountered.
 
 <p align="center">
-<img src="./pictures/board.jpg" alt="board" width="500" align="center"/>
+<img src="./pictures/board.jpg" alt="board" width="400" align="center"/>
 </p>
+<p align="center">Device Image</p>
 
 
 
@@ -105,12 +106,12 @@ We are group of NCKU CASLab. We are dedicate to solve the problem of solder join
 
 
 <p align="center">
-<img src="./pictures/Normal.jpg" alt="normal" width="500" align="center"/>
+<img src="./pictures/too_much.jpg" alt="normal" width="400" align="center"/>
 </p>
-<p align="center">Normal Solder Joint</p>
+<p align="center">Classfication Result (Too much)</p>
 
 <p align="center">
-<img src="./pictures/unknown.jpg" alt="unknown" width="500" align="center"/>
+<img src="./pictures/unknown.jpg" alt="unknown" width="400" align="center"/>
 </p>
-<p align="center">Unknown Image</p>
+<p align="center">Classfication Result (Unknown)</p>
 
