@@ -2,7 +2,9 @@
 
 ## Introduction
 
-We are group of NCKU CASLab. We are dedicate to solve the problem of solder joint classification problem. Since inspecting solder joint defect by human eye is time consuming and low efficiency, we propose a classification system with edge AI. Hope this AIoT device could solve the problem people long encountered.
+We are group of NCKU CASLab. We are dedicate to solve the problem of solder joint classification problem. Since inspecting solder joint defect by human eye is time consuming and low efficiency, we propose a classification system with edge AI. Our device could work only with power supply and need no computer or laptop connect to it.  Hope this AIoT device could solve the problem people long encountered.
+
+<img src="./pictures/board.jpg" alt="board" style="zoom: 50%;" />
 
 
 
@@ -90,5 +92,14 @@ We are group of NCKU CASLab. We are dedicate to solve the problem of solder join
 - Showing classification category result
 
 - Showing confidence percentage of the very classification
+
 - If all category confidence is lower than 50%, show unknown instead
+
+  
+
+## Demo Image
+
+<img src="./pictures/Normal.jpg" alt="normal" style="zoom:50%;" />
+
+<img src="./pictures/unknown.jpg" alt="unknown" style="zoom:50%;" />
 

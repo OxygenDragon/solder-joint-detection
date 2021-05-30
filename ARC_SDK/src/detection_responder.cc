@@ -76,7 +76,7 @@ void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
     TF_LITE_REPORT_ERROR(error_reporter, score_str);
   } else {
     TF_LITE_REPORT_ERROR(error_reporter, "Result: unknown");
-    sprintf(result_str, "unknown");
+    sprintf(result_str, "unknown").3
   }
   TF_LITE_REPORT_ERROR(error_reporter, "============================");
 
