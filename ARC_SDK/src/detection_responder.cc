@@ -29,33 +29,49 @@ char* className[] = {
   "Too much"
 };
 uint8_t ARDUINO_ADDR = 0x12;
+uint32_t int_buff;
+uint32_t int_part;
+uint32_t fra_part;
 }
+
+void FloatStrConversion(float input_float) {
+  int_buff = input_float * 1000;
+  int_part = int_buff / 1000;
+  fra_part = int_buff % 1000;
+}
+
 void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
   int maxIndex = -1;
   int maxScore = -255;
+  float maxScore_float = -2.0;
   hx_drv_share_switch(SHARE_MODE_I2CM); // start using I2C
   
   TF_LITE_REPORT_ERROR(error_reporter, "\n\n");
   for (int i = 0; i < kCategoryCount; i++) {
     char str[30];
-    sprintf(str, "[%s]: %d,", className[i], score[i]);
+    float score_float = (score[i] + 128.0) / 2.55;
+    FloatStrConversion(score_float);
+    sprintf(str, "[%s]: %ld.%ld", className[i], int_part, fra_part);
     TF_LITE_REPORT_ERROR(error_reporter, str);
     if (score[i] > 0 && maxScore < score[i]) {
       maxScore = score[i];
+      maxScore_float = score_float;
       maxIndex = i;
     }
     score_output[i] = score[i] + 128;
   }
 
   char result_str[30];
-  uint8_t result_str_int8[30];
+  uint8_t result_str_int8[30]; // to be sent by I2C
   TF_LITE_REPORT_ERROR(error_reporter, "===== Inference Result =====");
   if(maxIndex != -1) {
     char class_str[30];
     char score_str[30];
+    FloatStrConversion(maxScore_float);
+
     sprintf(class_str, "Result:     %s", className[maxIndex]);
-    sprintf(score_str, "Confidence: %d", maxScore);
-    sprintf(result_str, "%s\n%d", className[maxIndex], maxScore);
+    sprintf(score_str, "Confidence: %ld.%ld", int_part, fra_part);
+    sprintf(result_str, "%s\n%ld.%ld", className[maxIndex], int_part, fra_part);
     TF_LITE_REPORT_ERROR(error_reporter, class_str);
     TF_LITE_REPORT_ERROR(error_reporter, score_str);
   } else {

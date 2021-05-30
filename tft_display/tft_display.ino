@@ -46,6 +46,7 @@ void receiveEvent(int numBytes){
   int read_class = 1;
   class_str_begin = 0;
   confidence_str_begin = 0;
+  tft.fillScreen(0);
   
   while(Wire.available()){
     char c = Wire.read();
@@ -68,7 +69,6 @@ void receiveEvent(int numBytes){
 }
 
 void loop() {
-  tft.fillScreen(0);
   tft.setCursor(20, 50);
   tft.setTextSize(1.8);
   tft.setTextColor(ST7735_WHITE, ST7735_BLACK);

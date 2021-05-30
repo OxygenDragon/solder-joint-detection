@@ -32,7 +32,7 @@ tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* input = nullptr;
 
 // An area of memory to use for input, output, and intermediate arrays.
-constexpr int kTensorArenaSize = 300 * 1024;
+constexpr int kTensorArenaSize = 700 * 1024;
 #if (defined(__GNUC__) || defined(__GNUG__)) && !defined (__CCAC__)
 alignas(16) static uint8_t tensor_arena[kTensorArenaSize] __attribute__((section(".tensor_arena")));
 #else
@@ -55,7 +55,7 @@ void setup() {
     return;
   }
 
-  static tflite::MicroMutableOpResolver<10> micro_op_resolver;
+  static tflite::MicroMutableOpResolver<8> micro_op_resolver;
   micro_op_resolver.AddConv2D();
   micro_op_resolver.AddMaxPool2D();
   micro_op_resolver.AddRelu();
@@ -64,9 +64,6 @@ void setup() {
   micro_op_resolver.AddReshape();
   micro_op_resolver.AddAdd();
   micro_op_resolver.AddSoftmax();
-  micro_op_resolver.AddQuantize();
-  micro_op_resolver.AddDequantize();
-
 
   static tflite::MicroInterpreter static_interpreter(
       model, micro_op_resolver, tensor_arena, kTensorArenaSize, error_reporter);
@@ -78,6 +75,7 @@ void setup() {
     return;
   }
   input = interpreter->input(0);
+  TF_LITE_REPORT_ERROR(error_reporter, "Setup Finish");
 }
 
 void loop() {
@@ -90,7 +88,6 @@ void loop() {
   if (kTfLiteOk != interpreter->Invoke()) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed.");
   }
-
   
   TfLiteTensor* output = interpreter->output(0);
   RespondToDetection(error_reporter, (int8_t*)output->data.uint8);
