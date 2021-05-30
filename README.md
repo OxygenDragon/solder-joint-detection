@@ -6,8 +6,11 @@ We are group from NCKU CASLab. We are dedicate to solve the problem of solder jo
 
 <p align="center">
 <img src="./pictures/board.jpg" alt="board" width="400" align="center"/>
-</p>
-<p align="center">Device Image</p>
+</p> 
+<p align='center'>Device Image</p>
+
+
+
 
 
 
@@ -21,7 +24,7 @@ We are group from NCKU CASLab. We are dedicate to solve the problem of solder jo
   - Master device for displaying inference output
   - [Source Code](https://github.com/choucl/solder-joint-classfication/tree/master/tft_display)
 - ST7735
-  - LED display, for showing the classification result to user
+  - LCD display, for showing the classification result to user
 
 
 
@@ -59,7 +62,7 @@ We are group from NCKU CASLab. We are dedicate to solve the problem of solder jo
   # reset the board and choose the img file to burn
   ```
 
-- Arduino micro pro
+- Arduino Micro Pro
   1. upload the sketch in `tft_display/` to your Arduino
   2. one should notice that library `Adafruit_GFX` and `Adafruit_ST7735` should be installed first to make it work properly
 
@@ -69,7 +72,7 @@ We are group from NCKU CASLab. We are dedicate to solve the problem of solder jo
 
 ### Training
 
-- Model: CNN
+- Model: Custom CNN
 - Training Dataset
   - Wild dataset collected from internet
   - Capture pictures from real PCB board
@@ -104,7 +107,6 @@ We are group from NCKU CASLab. We are dedicate to solve the problem of solder jo
 
 ## Demo Image
 
-
 <p align="center">
 <img src="./pictures/too_much.jpg" alt="normal" width="400" align="center"/>
 </p>
@@ -113,5 +115,5 @@ We are group from NCKU CASLab. We are dedicate to solve the problem of solder jo
 <p align="center">
 <img src="./pictures/unknown.jpg" alt="unknown" width="400" align="center"/>
 </p>
-<p align="center">Classfication Result (Unknown)</p>
+<p align="center">Classfication Result (Unknown Image)</p>
 
