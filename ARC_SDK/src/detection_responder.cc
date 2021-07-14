@@ -40,7 +40,7 @@ void FloatStrConversion(float input_float) {
   fra_part = int_buff % 1000;
 }
 
-void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
+void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score, int8_t* score2) {
   int maxIndex = -1;
   int maxScore = -255;
   float maxScore_float = -2.0;
@@ -76,7 +76,7 @@ void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
     TF_LITE_REPORT_ERROR(error_reporter, score_str);
   } else {
     TF_LITE_REPORT_ERROR(error_reporter, "Result: unknown");
-    sprintf(result_str, "unknown").3
+    sprintf(result_str, "unknown");
   }
   TF_LITE_REPORT_ERROR(error_reporter, "============================");
 
