@@ -28,6 +28,7 @@ uint32_t height = 416;
 TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
                       int image_height, int channels, int8_t* image_data) {
   static bool is_initialized = false;
+  hx_drv_uart_initial(UART_BR_921600);
 
   if (!is_initialized) {
     if (hx_drv_sensor_initial(&g_pimg_config) != HX_DRV_LIB_PASS) {

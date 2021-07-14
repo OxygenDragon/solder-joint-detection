@@ -19,6 +19,7 @@ limitations under the License.
 #include "image_provider.h"
 #include "model_data.h"
 #include "model_settings.h"
+#include "hx_drv_tflm.h"
 #include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
@@ -32,7 +33,7 @@ tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* input = nullptr;
 
 // An area of memory to use for input, output, and intermediate arrays.
-constexpr int kTensorArenaSize = 710 * 1024;
+constexpr int kTensorArenaSize = 1530 * 1024;
 #if (defined(__GNUC__) || defined(__GNUG__)) && !defined (__CCAC__)
 alignas(16) static uint8_t tensor_arena[kTensorArenaSize] __attribute__((section(".tensor_arena")));
 #else
@@ -45,6 +46,7 @@ alignas(16) static uint8_t tensor_arena[kTensorArenaSize];
 void setup() {
   static tflite::MicroErrorReporter micro_error_reporter;
   error_reporter = &micro_error_reporter;
+  hx_drv_uart_initial(UART_BR_921600);
 
   model = tflite::GetModel(model_tflite);
   if (model->version() != TFLITE_SCHEMA_VERSION) {
@@ -90,11 +92,11 @@ void loop() {
   
   TfLiteTensor* output1 = interpreter->output(0);
   int8_t* data = output1->data.int8;
-  for (int i = 0; i < 21; ++i) {
-    char tmp[10];
-    sprintf(tmp, "i: %d, data: %d", i, data[i]);
-    TF_LITE_REPORT_ERROR(error_reporter, tmp);
-  }
+  // for (int i = 0; i < 21; ++i) {
+  //   char tmp[10];
+  //   sprintf(tmp, "i: %d, data: %d", i, data[i]);
+  //   TF_LITE_REPORT_ERROR(error_reporter, tmp);
+  // }
   // RespondToDetection(
   //   error_reporter,
   //   (int8_t*)output1->data.uint8,
