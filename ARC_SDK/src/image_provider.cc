@@ -21,14 +21,13 @@ limitations under the License.
 
 namespace {
 hx_drv_sensor_image_config_t g_pimg_config;
-uint32_t width = 416;
-uint32_t height = 416;
 }
 
 TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
-                      int image_height, int channels, int8_t* image_data) {
+                      int image_height, int channels, int8_t** image_data) {
   static bool is_initialized = false;
-  hx_drv_uart_initial(UART_BR_921600);
+  // hx_drv_uart_initial(UART_BR_921600);
+  hx_drv_uart_initial(UART_BR_115200);
 
   if (!is_initialized) {
     if (hx_drv_sensor_initial(&g_pimg_config) != HX_DRV_LIB_PASS) {
@@ -42,44 +41,33 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
 
   //capture image by sensor
   hx_drv_sensor_capture(&g_pimg_config);
-
-  //send jpeg image data out through SPI
-  //  hx_drv_spim_send(g_pimg_config.jpeg_address, g_pimg_config.jpeg_size,
-  //                   SPI_TYPE_JPG);
-  //
-  // hx_drv_image_rescale((uint8_t*)g_pimg_config.raw_address,
-  //                      g_pimg_config.img_width, g_pimg_config.img_height,
-  //                      image_data, image_width, image_height);
-  
-  uint8_t* img_ptr = (uint8_t*) malloc(sizeof(uint8_t) * width * height);
-  uint32_t width_delta = (640 - width) / 2;
-  uint32_t height_delta = (480 - height) / 2;
+  uint8_t* img_ptr = (uint8_t*) 
+    malloc(sizeof(uint8_t) * image_width * image_height);
+  uint32_t width_delta = (640 - image_width) / 2;
+  uint32_t height_delta = (480 - image_height) / 2;
   uint32_t img_index = 0;	
-  // copying interest region of image
-  for (uint32_t i = width_delta; i < 640 - width_delta; ++i) {
-    for (uint32_t j = height_delta; j < 480 - height_delta; ++j) {
-      img_ptr[img_index++] = *(((uint8_t*) g_pimg_config.raw_address) +
-          i * 640 + j);
-    }
-  }
-  image_data = (int8_t*) img_ptr;
+  *image_data = (int8_t*) img_ptr;
   // start signal
   for (uint32_t i = 0; i < 10; ++i) {
     hx_drv_uart_print("7");
   }
-  // image transferring
-  for (uint32_t i = 0; i < width * height; ++i){
-    hx_drv_uart_print("%c", img_ptr[i]);
-  }
-  // quantization parameters
-  double kScale = 0.00392117677256465;
-  int32_t kZeroPoint = -128;
 
+  for (uint32_t i = width_delta; i < 640 - width_delta; ++i) {
+    for (uint32_t j = height_delta; j < 480 - height_delta; ++j) {
+      // copying interest region of captured image
+      img_ptr[img_index] = *(((uint8_t*) g_pimg_config.raw_address) +
+          i * 640 + j);
+      // image transferring
+      hx_drv_uart_print("%c", img_ptr[img_index++]);
+    }
+  }
+  
+  // quantization input setup
   float pixel;
-  for (int i = 0; i < 128*128; ++i) { // 128x128
-    pixel = float(int32_t(image_data[i]) + 128) / 255; // normalize
+  for (int i = 0; i < image_width * image_height; ++i) { 
+    pixel = float(int32_t((*image_data)[i]) + 128) / 255; // normalize
     float npixel = pixel / kScale + kZeroPoint;
-    image_data[i] = (int8_t)npixel;
+    (*image_data)[i] = (int8_t)npixel;
   }
   
   return kTfLiteOk;

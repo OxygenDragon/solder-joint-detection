@@ -33,9 +33,10 @@ tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* input = nullptr;
 
 // An area of memory to use for input, output, and intermediate arrays.
-constexpr int kTensorArenaSize = 1530 * 1024;
+constexpr int kTensorArenaSize = 760 * 1024;
 #if (defined(__GNUC__) || defined(__GNUG__)) && !defined (__CCAC__)
-alignas(16) static uint8_t tensor_arena[kTensorArenaSize] __attribute__((section(".tensor_arena")));
+alignas(16) static uint8_t tensor_arena[kTensorArenaSize] __attribute__(
+    (section(".tensor_arena")));
 #else
 #pragma Bss(".tensor_arena")
 alignas(16) static uint8_t tensor_arena[kTensorArenaSize];
@@ -46,7 +47,9 @@ alignas(16) static uint8_t tensor_arena[kTensorArenaSize];
 void setup() {
   static tflite::MicroErrorReporter micro_error_reporter;
   error_reporter = &micro_error_reporter;
-  hx_drv_uart_initial(UART_BR_921600);
+  // hx_drv_uart_initial(UART_BR_921600);
+  TF_LITE_REPORT_ERROR(error_reporter, "start inferencing...");
+  hx_drv_uart_initial(UART_BR_115200);
 
   model = tflite::GetModel(model_tflite);
   if (model->version() != TFLITE_SCHEMA_VERSION) {
@@ -60,7 +63,7 @@ void setup() {
   static tflite::MicroMutableOpResolver<7> micro_op_resolver;
   micro_op_resolver.AddConv2D();
   micro_op_resolver.AddMaxPool2D();
-  micro_op_resolver.AddRelu();
+  micro_op_resolver.AddRelu6();
   micro_op_resolver.AddStridedSlice();
   micro_op_resolver.AddMul();
   micro_op_resolver.AddResizeNearestNeighbor();
@@ -82,24 +85,25 @@ void setup() {
 void loop() {
   // Get image from provider
   if (kTfLiteOk != GetImage(error_reporter, kNumCols, kNumRows, kNumChannels,
-                            input->data.int8)) {
+                            &(input->data.int8))) {
     TF_LITE_REPORT_ERROR(error_reporter, "Image capture failed.");
   }
 
+  // invoke model for inferencing
   if (kTfLiteOk != interpreter->Invoke()) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed.");
   }
-  
+
+  // sending predictions signals
+  for (uint8_t i = 0; i < 10; ++i) {
+    hx_drv_uart_print("8");
+  }
   TfLiteTensor* output1 = interpreter->output(0);
-  int8_t* data = output1->data.int8;
-  // for (int i = 0; i < 21; ++i) {
-  //   char tmp[10];
-  //   sprintf(tmp, "i: %d, data: %d", i, data[i]);
-  //   TF_LITE_REPORT_ERROR(error_reporter, tmp);
-  // }
-  // RespondToDetection(
-  //   error_reporter,
-  //   (int8_t*)output1->data.uint8,
-  //   (int8_t*)output2->data.uint8
-  // );
+  uint8_t* data = output1->data.uint8;
+  for (uint32_t i = 0; i < kPredictionSize; ++i) {
+    hx_drv_uart_print("%c", data[i]);
+  }
+
+  free(input->data.int8);
+  TF_LITE_REPORT_ERROR(error_reporter, "Send prediction done.");
 }

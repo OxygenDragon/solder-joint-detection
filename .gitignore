@@ -9,3 +9,5 @@ PCB/cfg/yolov4-tiny.conv.29
 *.ipynb_checkpoints/
 crop_img/
 *.vscode/
+*.o
+yolo_related/annotations/*

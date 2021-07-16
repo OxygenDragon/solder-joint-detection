@@ -16,14 +16,15 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_MICRO_EXAMPLES_HANDWRITING_MODEL_SETTINGS_H_
 #define TENSORFLOW_LITE_MICRO_EXAMPLES_HANDWRITING_MODEL_SETTINGS_H_
 
-constexpr int kNumCols = 128;
-constexpr int kNumRows = 128;
+constexpr int kNumCols = 384;
+constexpr int kNumRows = 384;
 constexpr int kNumChannels = 1;
-
 constexpr int kMaxImageSize = kNumCols * kNumRows * kNumChannels;
-
-constexpr int kCategoryCount = 6;
-
+constexpr int kPredictionSize = 13824; // 24 * 24 * 24
+// quantization parameters
+constexpr double kScale = 0.00392117677256465;
+constexpr int32_t kZeroPoint = -128;
+constexpr int kCategoryCount = 3;
 extern const char* kCategoryLabels[kCategoryCount];
 
 #endif  // TENSORFLOW_LITE_MICRO_EXAMPLES_HANDWRITING_MODEL_SETTINGS_H_

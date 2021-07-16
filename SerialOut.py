@@ -5,20 +5,21 @@ from utils.detection import get_bounding_boxes
 
 PORT = '/dev/ttyUSB0'
 BAUD_RATE = 921600
+IMG_SIZE = (384, 384)
+PREDICTION_LEN = 24 * 24 * 24  # grid_len * grid_len * yolo
 ser = serial.Serial(PORT, BAUD_RATE)
 
-IMG_SIZE = (416, 416)
-PREDICTION_LEN = 26 * 26 * 33
 img_data = []
 predicitons = []
 start_signal_count = 0
 count = 0
 try:
+    ser.reset_input_buffer()
     print("pending start signal...")
     while True:
+        # waiting for image start signal
         while ser.inWaiting and start_signal_count != 10:
             data = ser.read()
-            print(data)
             if data == b'7':
                 start_signal_count += 1
             else:
@@ -33,14 +34,25 @@ try:
                 data_array = np.array(img_data, dtype=np.uint8)
                 print("image transfer complete!")
                 print("image size", data_array.shape)
-                predicitons = np.empty(1, dtype=np.uint8)
-                while ser.inWaiting:
-                    data = ser.read(PREDICTION_LEN)
-                    predictions = np.array(list(data), dtype=np.uint8)
-                    break
+
+                # transferring predictions
+                byte_queue = []
+                byte_queue_count = 0
+                stop_point = PREDICTION_LEN / 100
+                # waiting for prediction start signal
+                while ser.inWaiting and start_signal_count != 10:
+                    data = ser.read()
+                    if data == b'8':
+                        start_signal_count += 1
+                    else:
+                        start_signal_count = 0
+                start_signal_count = 0
+                while ser.inWaiting and byte_queue_count < stop_point:
+                    byte_queue += list(ser.read(100))
+                    byte_queue_count += 1
+                predictions = np.array(byte_queue, dtype=np.uint8)
                 get_bounding_boxes(data_array, predictions)
-                cv2.imshow('result', data_array)
-                cv2.waitKey(1)
+                print("draw bouding box complete!")
                 img_data = []
                 count = 0
                 break
