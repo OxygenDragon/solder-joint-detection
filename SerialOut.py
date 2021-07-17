@@ -29,8 +29,8 @@ try:
         while ser.inWaiting:
             data = ser.read(IMG_SIZE[0])
             img_data.append(list(data))
-            count += 1
             if len(img_data) == IMG_SIZE[1]:
+                count += 1
                 data_array = np.array(img_data, dtype=np.uint8)
                 print("image transfer complete!")
                 print("image size", data_array.shape)
@@ -51,10 +51,9 @@ try:
                     byte_queue += list(ser.read(100))
                     byte_queue_count += 1
                 predictions = np.array(byte_queue, dtype=np.uint8)
-                get_bounding_boxes(data_array, predictions)
+                get_bounding_boxes(data_array, predictions, count)
                 print("draw bouding box complete!")
                 img_data = []
-                count = 0
                 break
 
 except KeyboardInterrupt:

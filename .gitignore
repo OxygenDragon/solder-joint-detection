@@ -10,4 +10,7 @@ PCB/cfg/yolov4-tiny.conv.29
 crop_img/
 *.vscode/
 *.o
+*.map
+himax_pictures/*
 yolo_related/annotations/*
+*.pyc

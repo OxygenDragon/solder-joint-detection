@@ -33,7 +33,7 @@ tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* input = nullptr;
 
 // An area of memory to use for input, output, and intermediate arrays.
-constexpr int kTensorArenaSize = 760 * 1024;
+constexpr int kTensorArenaSize = 730 * 1024;
 #if (defined(__GNUC__) || defined(__GNUG__)) && !defined (__CCAC__)
 alignas(16) static uint8_t tensor_arena[kTensorArenaSize] __attribute__(
     (section(".tensor_arena")));
@@ -47,9 +47,9 @@ alignas(16) static uint8_t tensor_arena[kTensorArenaSize];
 void setup() {
   static tflite::MicroErrorReporter micro_error_reporter;
   error_reporter = &micro_error_reporter;
-  // hx_drv_uart_initial(UART_BR_921600);
+  hx_drv_uart_initial(UART_BR_921600);
   TF_LITE_REPORT_ERROR(error_reporter, "start inferencing...");
-  hx_drv_uart_initial(UART_BR_115200);
+  // hx_drv_uart_initial(UART_BR_115200);
 
   model = tflite::GetModel(model_tflite);
   if (model->version() != TFLITE_SCHEMA_VERSION) {
@@ -98,12 +98,13 @@ void loop() {
   for (uint8_t i = 0; i < 10; ++i) {
     hx_drv_uart_print("8");
   }
-  TfLiteTensor* output1 = interpreter->output(0);
-  uint8_t* data = output1->data.uint8;
+  TfLiteTensor* output = interpreter->output(0);
+  uint8_t* data = output->data.uint8;
   for (uint32_t i = 0; i < kPredictionSize; ++i) {
     hx_drv_uart_print("%c", data[i]);
   }
 
   free(input->data.int8);
   TF_LITE_REPORT_ERROR(error_reporter, "Send prediction done.");
+  RespondToDetection(error_reporter, output->data.int8);
 }

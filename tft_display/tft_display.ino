@@ -7,16 +7,17 @@
 #include <SPI.h>
 #include <Wire.h>
 
-#define TFT_CS  10 // TFT LCD的CS PIN腳
+#define TFT_CS  10 // TFT LCD CS PIN
 #define TFT_DC   8 // TFT DC(A0、RS) 
 #define TFT_RST  9 // TFT Reset
 
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-char class_str[20];
-char confidence_str[8];
-int class_str_begin = 0;
-int confidence_str_begin = 0;
+char status_str[20];
+int has_defect = 0;
+int status_str_index = 0;
+String description_str;
+String class_str[3];
 
 void setup(void) {
   
@@ -43,41 +44,39 @@ void setup(void) {
 }
 
 void receiveEvent(int numBytes){
-  int read_class = 1;
-  class_str_begin = 0;
-  confidence_str_begin = 0;
   tft.fillScreen(0);
   
   while(Wire.available()){
     char c = Wire.read();
-    Serial.print(c);
-    if (read_class) {
-      if (c == '\n') {
-        read_class = 0;
-        class_str[class_str_begin] = '\0';
-        Serial.println();
-        continue;
-      }
-      class_str[class_str_begin++] = c;
-      
-    } else {
-      confidence_str[confidence_str_begin++] = c;
-    }
+    status_str[status_str_index++] = c;
   }
-  Serial.println();
-  confidence_str[confidence_str_begin] = 0;
+  has_defect = (status_str[0] == '1');
+  if (has_defect) {
+    description_str = "Defect joint detected!\n";
+    class_str[0] = "Insufficient: " + status_str[1] + "\n";
+    class_str[1] = "Short: " + status_str[2] + "\n";
+    class_str[2] = "Too much: " + status_str[3] + "\n";
+  }
 }
 
 void loop() {
-  tft.setCursor(20, 50);
-  tft.setTextSize(1.8);
-  tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
-  tft.print(class_str);
+  if (!has_defect) {
+    tft.setCursor(20, 50);
+    tft.setTextSize(1.8);
+    tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+    tft.print(description_str);
+  } else {
+    tft.setCursor(20, 30);
+    tft.setTextSize(1.8);
+    tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+    tft.print(description_str);
 
-  Serial.println(class_str);
-  tft.setCursor(20, 90);
-  tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
-  tft.print(confidence_str);
+    for (int i = 0; i < 3; ++i) {
+      tft.setCursor(20, 30 + 20 * (i + 1));
+      tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
+      tft.print(class_str[i]);
+    } 
+  }
 
   delay(50);
 }

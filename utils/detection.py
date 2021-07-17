@@ -8,7 +8,8 @@ import cv2
 # return: none
 
 
-def get_bounding_boxes(img, predictions):
+def get_bounding_boxes(img, predictions, img_number):
+    cv2.imwrite('himax_pictures/himax_3_{}.jpg'.format(img_number + 34), img)
     cv2.imshow('Detecting result', img)
     cv2.waitKey(1)
     return

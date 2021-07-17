@@ -21,17 +21,15 @@ limitations under the License.
 namespace {
 uint8_t score_output[kCategoryCount];
 char* className[] = {
-  "Normal", 
-  "Cold joint", 
   "Insufficient", 
   "Short",
-  "Overheat", 
   "Too much"
 };
 uint8_t ARDUINO_ADDR = 0x12;
 uint32_t int_buff;
 uint32_t int_part;
 uint32_t fra_part;
+uint8_t has_defect_joint = 0;
 }
 
 void FloatStrConversion(float input_float) {
@@ -40,54 +38,89 @@ void FloatStrConversion(float input_float) {
   fra_part = int_buff % 1000;
 }
 
-void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score, int8_t* score2) {
-  int maxIndex = -1;
-  int maxScore = -255;
-  float maxScore_float = -2.0;
+float GetFloatOutput(int8_t input) {
+  if ((float)((input - kOutputZero) * kOutputScale) > 1) 
+    return 1.0;
+  else
+    return (float)((input - kOutputZero) * kOutputScale);
+}
+
+void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
   hx_drv_share_switch(SHARE_MODE_I2CM); // start using I2C
   
-  TF_LITE_REPORT_ERROR(error_reporter, "\n\n");
-  for (int i = 0; i < kCategoryCount; i++) {
-    char str[30];
-    float score_float = (score[i] + 128.0) / 2.55;
-    FloatStrConversion(score_float);
-    sprintf(str, "[%s]: %ld.%ld", className[i], int_part, fra_part);
-    TF_LITE_REPORT_ERROR(error_reporter, str);
-    if (score[i] > 0 && maxScore < score[i]) {
-      maxScore = score[i];
-      maxScore_float = score_float;
-      maxIndex = i;
+  // TF_LITE_REPORT_ERROR(error_reporter, "\n\n");
+  // for (int i = 0; i < kCategoryCount; i++) {
+  //   char str[30];
+  //   float score_float = (score[i] + 128.0) / 2.55;
+  //   FloatStrConversion(score_float);
+  //   sprintf(str, "[%s]: %ld.%ld", className[i], int_part, fra_part);
+  //   TF_LITE_REPORT_ERROR(error_reporter, str);
+  //   if (score[i] > 0 && maxScore < score[i]) {
+  //     maxScore = score[i];
+  //     maxScore_float = score_float;
+  //     maxIndex = i;
+  //   }
+  //   score_output[i] = score[i] + 128;
+  // }
+
+  // char result_str[30];
+  // uint8_t result_str_int8[30]; // to be sent by I2C
+  // TF_LITE_REPORT_ERROR(error_reporter, "===== Inference Result =====");
+  // if(maxIndex != -1) {
+  //   char class_str[30];
+  //   char score_str[30];
+  //   FloatStrConversion(maxScore_float);
+
+  //   sprintf(class_str, "Result:     %s", className[maxIndex]);
+  //   sprintf(score_str, "Confidence: %ld.%ld", int_part, fra_part);
+  //   sprintf(result_str, "%s\n%ld.%ld", className[maxIndex], int_part, fra_part);
+  //   TF_LITE_REPORT_ERROR(error_reporter, class_str);
+  //   TF_LITE_REPORT_ERROR(error_reporter, score_str);
+  // } else {
+  //   TF_LITE_REPORT_ERROR(error_reporter, "Result: unknown");
+  //   sprintf(result_str, "unknown");
+  // }
+  // TF_LITE_REPORT_ERROR(error_reporter, "============================");
+
+  // for (int i = 0; i < strlen(result_str); i++) {
+  //   result_str_int8[i] = (uint8_t)result_str[i];
+  // }
+  int8_t confidence, max_score = -128, max_class; 
+  uint8_t predict_count[3];
+  for (int8_t i = 0; i < 3; ++i)
+    predict_count[i] = 0;
+  for (int32_t i = 5; i < kPredictionSize; i += kSinglePredictSize) {
+    confidence = score[i];
+    for (int8_t j = i + 1; j < 3; ++j) {
+      if (score[j] > max_score) {
+        max_score = score[j];
+        max_class = j - i;
+      } 
     }
-    score_output[i] = score[i] + 128;
+    if (GetFloatOutput(confidence) * GetFloatOutput(max_score) > kDefectThresh) {
+      predict_count[max_class]++;
+      has_defect_joint = 1;
+    }
   }
 
-  char result_str[30];
-  uint8_t result_str_int8[30]; // to be sent by I2C
-  TF_LITE_REPORT_ERROR(error_reporter, "===== Inference Result =====");
-  if(maxIndex != -1) {
-    char class_str[30];
-    char score_str[30];
-    FloatStrConversion(maxScore_float);
-
-    sprintf(class_str, "Result:     %s", className[maxIndex]);
-    sprintf(score_str, "Confidence: %ld.%ld", int_part, fra_part);
-    sprintf(result_str, "%s\n%ld.%ld", className[maxIndex], int_part, fra_part);
-    TF_LITE_REPORT_ERROR(error_reporter, class_str);
-    TF_LITE_REPORT_ERROR(error_reporter, score_str);
+  // preparing result string to sent
+  // passed: 0
+  // not passed: 1 insufficient short too_much
+  uint8_t result_str_int8[30];
+  uint8_t result_str_len;
+  if (has_defect_joint) {
+    result_str_int8[0] = 1;
+    result_str_int8[1] =predict_count[0];
+    result_str_int8[2] =predict_count[1];
+    result_str_int8[3] =predict_count[2];
+    result_str_len = 4;
   } else {
-    TF_LITE_REPORT_ERROR(error_reporter, "Result: unknown");
-    sprintf(result_str, "unknown");
-  }
-  TF_LITE_REPORT_ERROR(error_reporter, "============================");
-
-  for (int i = 0; i < strlen(result_str); i++) {
-    result_str_int8[i] = (uint8_t)result_str[i];
+    result_str_int8[0] = 0;
+    result_str_len = 1;
   }
 
-  //send result data out through SPI
-  hx_drv_spim_send((uint32_t)score_output, sizeof(int8_t) * kCategoryCount,
-      SPI_TYPE_META_DATA);
-
+  // sending detections result to aruduino through i2c
   TF_LITE_REPORT_ERROR(error_reporter, "I2C Transmission: %d",
-      hx_drv_i2cm_set_data(ARDUINO_ADDR, NULL, 0, result_str_int8, strlen(result_str)));
+      hx_drv_i2cm_set_data(ARDUINO_ADDR, NULL, 0,
+        result_str_int8, result_str_len));
 }
