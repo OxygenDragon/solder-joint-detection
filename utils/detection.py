@@ -10,33 +10,39 @@ import tensorflow as tf
 
 
 class_name = [
-  "insufficient",
-  "short   ",
-  "too much"
+    "insufficient",
+    "short   ",
+    "too much"
 ]
 out_zero_point = 6
 out_scale = 0.01769256219267845
 
+
 def get_bounding_boxes(img, predictions, img_number):
     predictions = np.reshape(predictions, (1, 24, 24, 24))
-    predictions = np.float32((predictions  - out_zero_point)* out_scale)
-    predictions = _detection_layer(predictions, num_classes=3, anchors=[(10, 14),  (23, 27),  (37, 58),] , img_size=[384,384], data_format='NHWC')
-    boxes, classes, scores = handle_predictions(predictions, confidence=0.1, iou_threshold=0.5)
+    predictions = np.float32((predictions - out_zero_point) * out_scale)
+    predictions = _detection_layer(predictions, num_classes=3, anchors=[(
+        10, 14),  (23, 27),  (37, 58), ], img_size=[384, 384], data_format='NHWC')
+    boxes, classes, scores = handle_predictions(
+        predictions, confidence=0.1, iou_threshold=0.5)
+    print(len(boxes))
     draw_boxes(boxes, classes, scores, img, class_name)
     cv2.imshow('Detecting result', img)
+    cv2.imwrite("himax_image.jpg", img)
     cv2.waitKey(1)
+
 
 def handle_predictions(predictions, confidence=0.6, iou_threshold=0.5):
     boxes = predictions[:, :, :4]
-    box_confidences = np.expand_dims(predictions[:, :, 4], -1) 
+    box_confidences = np.expand_dims(predictions[:, :, 4], -1)
     box_confidences = np.maximum(box_confidences, 0)
     box_confidences = np.minimum(box_confidences, 1)
 
-    box_class_probs = predictions[:, :, 5:] 
+    box_class_probs = predictions[:, :, 5:]
     box_class_probs = np.maximum(box_class_probs, 0)
     box_class_probs = np.minimum(box_class_probs, 1)
 
-    box_scores = list(box_confidences * box_class_probs)    
+    box_scores = list(box_confidences * box_class_probs)
     box_class_scores = np.max(box_scores, axis=-1)
     box_classes = np.argmax(box_scores, axis=-1)
     pos = np.where(box_class_scores >= confidence)
@@ -44,7 +50,8 @@ def handle_predictions(predictions, confidence=0.6, iou_threshold=0.5):
     boxes = boxes[pos]
     classes = box_classes[pos]
     scores = box_class_scores[pos]
-    n_boxes, n_classes, n_scores = nms_boxes(boxes, classes, scores, iou_threshold)
+    n_boxes, n_classes, n_scores = nms_boxes(
+        boxes, classes, scores, iou_threshold)
 
     if n_boxes:
         boxes = np.concatenate(n_boxes)
@@ -102,22 +109,26 @@ def nms_boxes(boxes, classes, scores, iou_threshold):
 def draw_boxes(boxes, classes, scores, img, class_name):
     if boxes is not None:
         for box, score, cls in zip(boxes, scores, classes):
-            left = (int)(box[0]- box[2]/2)
-            top = (int)(box[1] - box[3]/2 )
-            right = (int)(box[0]  + box[2]/2 )
-            bottom = (int)(box[1]  + box[3]/2 )
-            color = (0,255,0)
+            left = (int)(box[0] - box[2]/2)
+            top = (int)(box[1] - box[3]/2)
+            right = (int)(box[0] + box[2]/2)
+            bottom = (int)(box[1] + box[3]/2)
+            color = (0, 255, 0)
             thick = 2
             if top < 30:
-                cv2.putText(img,'{}: {:.2f}%'.format(class_name[cls], score * 100),(left, bottom + 20),0,thick/3,color)
+                cv2.putText(img, '{}: {:.2f}%'.format(
+                    class_name[cls], score * 100), (left, bottom + 20), 0, thick/3, color)
             else:
-                cv2.putText(img,'{}: {:.2f}%'.format(class_name[cls], score * 100),(left, top - 10),0,thick/3,color)
+                cv2.putText(img, '{}: {:.2f}%'.format(
+                    class_name[cls], score * 100), (left, top - 10), 0, thick/3, color)
             cv2.rectangle(img, (left, top), (right, bottom), color, thick)
+
 
 def _get_size(shape, data_format):
     if len(shape) == 4:
         shape = shape[1:]
     return shape[1:3] if data_format == 'NCHW' else shape[0:2]
+
 
 def _detection_layer(predictions, num_classes, anchors, img_size, data_format):
     num_anchors = len(anchors)
@@ -128,7 +139,8 @@ def _detection_layer(predictions, num_classes, anchors, img_size, data_format):
     bbox_attrs = 5 + num_classes
 
     if data_format == 'NCHW':
-        predictions = tf.reshape(predictions, [-1, num_anchors * bbox_attrs, dim])
+        predictions = tf.reshape(
+            predictions, [-1, num_anchors * bbox_attrs, dim])
         predictions = tf.transpose(predictions, [0, 2, 1])
 
     predictions = tf.reshape(predictions, [-1, num_anchors * dim, bbox_attrs])
@@ -137,12 +149,12 @@ def _detection_layer(predictions, num_classes, anchors, img_size, data_format):
 
     anchors = [(a[0] / stride[0], a[1] / stride[1]) for a in anchors]
 
-    box_centers, box_sizes, confidence, classes = tf.split(predictions, [2, 2, 1, num_classes], axis=-1)
+    box_centers, box_sizes, confidence, classes = tf.split(
+        predictions, [2, 2, 1, num_classes], axis=-1)
 
     box_centers = np.maximum(box_centers, 0)
     box_centers = np.minimum(box_centers, 1)
 
-    
     grid_x = tf.range(grid_size[0], dtype=tf.float32)
     grid_y = tf.range(grid_size[1], dtype=tf.float32)
     a, b = tf.meshgrid(grid_x, grid_y)

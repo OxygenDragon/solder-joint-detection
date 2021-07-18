@@ -60,14 +60,14 @@ void setup() {
     return;
   }
 
-  static tflite::MicroMutableOpResolver<7> micro_op_resolver;
+  static tflite::MicroMutableOpResolver<3> micro_op_resolver;
   micro_op_resolver.AddConv2D();
   micro_op_resolver.AddMaxPool2D();
   micro_op_resolver.AddRelu6();
-  micro_op_resolver.AddStridedSlice();
-  micro_op_resolver.AddMul();
-  micro_op_resolver.AddResizeNearestNeighbor();
-  micro_op_resolver.AddConcatenation();
+  // micro_op_resolver.AddStridedSlice();
+  // micro_op_resolver.AddMul();
+  // micro_op_resolver.AddResizeNearestNeighbor();
+  // micro_op_resolver.AddConcatenation();
 
   static tflite::MicroInterpreter static_interpreter(
       model, micro_op_resolver, tensor_arena, kTensorArenaSize, error_reporter);
@@ -99,7 +99,7 @@ void loop() {
     hx_drv_uart_print("8");
   }
   TfLiteTensor* output = interpreter->output(0);
-  uint8_t* data = output->data.uint8;
+  int8_t* data = output->data.int8;
   for (uint32_t i = 0; i < kPredictionSize; ++i) {
     hx_drv_uart_print("%c", data[i]);
   }

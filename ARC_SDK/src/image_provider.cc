@@ -58,15 +58,15 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
       img_ptr[img_index] = *(((uint8_t*) g_pimg_config.raw_address) +
           i * 640 + j);
       // image transferring
-      hx_drv_uart_print("%c", img_ptr[img_index++]);
+      hx_drv_uart_print("%c", (*image_data)[img_index++]);
     }
   }
   
   // quantization input setup
   float pixel;
   for (int i = 0; i < image_width * image_height; ++i) { 
-    pixel = float(int32_t((*image_data)[i]) + 128) / 255; // normalize
-    float npixel = pixel / kScale + kZeroPoint;
+    // pixel = float(int32_t((*image_data)[i]) + 128) / 255; // normalize
+    float npixel = (*image_data)[i] / kScale + kZeroPoint;
     (*image_data)[i] = (int8_t)npixel;
   }
   

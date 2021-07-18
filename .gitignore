@@ -14,3 +14,5 @@ crop_img/
 himax_pictures/*
 yolo_related/annotations/*
 *.pyc
+*.elf
+*.img
