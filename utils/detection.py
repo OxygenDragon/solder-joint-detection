@@ -18,6 +18,7 @@ out_zero_point = 6
 out_scale = 0.01769256219267845
 
 def get_bounding_boxes(img, predictions, img_number):
+    predictions = np.reshape(1, 24, 24, 24)
     predictions = np.float32((predictions  - out_zero_point)* out_scale)
     predictions = _detection_layer(predictions, num_classes=3, anchors=[(10, 14),  (23, 27),  (37, 58),] , img_size=[384,384], data_format='NHWC')
     boxes, classes, scores = handle_predictions(predictions, confidence=0.1, iou_threshold=0.5)
