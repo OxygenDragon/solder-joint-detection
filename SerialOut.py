@@ -42,6 +42,7 @@ try:
                 # waiting for prediction start signal
                 while ser.inWaiting and start_signal_count != 10:
                     data = ser.read()
+                    print(data)
                     if data == b'8':
                         start_signal_count += 1
                     else:
@@ -50,6 +51,8 @@ try:
                 while ser.inWaiting and byte_queue_count < stop_point:
                     byte_queue += list(ser.read(576))
                     byte_queue_count += 1
+                for i in range(PREDICTION_LEN):
+                    byte_queue[i] = int(byte_queue[i])
                 predictions = np.array(byte_queue, dtype=np.int8)
                 f = open("prediction.txt", 'w')
                 for x in range(PREDICTION_LEN):

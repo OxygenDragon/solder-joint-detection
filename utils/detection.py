@@ -24,8 +24,7 @@ def get_bounding_boxes(img, predictions, img_number):
     predictions = _detection_layer(predictions, num_classes=3, anchors=[(
         10, 14),  (23, 27),  (37, 58), ], img_size=[384, 384], data_format='NHWC')
     boxes, classes, scores = handle_predictions(
-        predictions, confidence=0.1, iou_threshold=0.5)
-    print(len(boxes))
+        predictions, confidence=0.8, iou_threshold=0.5)
     draw_boxes(boxes, classes, scores, img, class_name)
     cv2.imshow('Detecting result', img)
     cv2.imwrite("himax_image.jpg", img)

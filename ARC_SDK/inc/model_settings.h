@@ -24,7 +24,7 @@ constexpr int kPredictionSize = 13824; // 24 * 24 * 24
 constexpr int kSinglePredictSize = 8;
 constexpr float kDefectThresh = 0.6;
 // quantization parameters
-constexpr double kScale = 0.00392117677256465;
+constexpr float kScale = 0.0039;
 constexpr int32_t kZeroPoint = -128;
 
 // output quantization parameters

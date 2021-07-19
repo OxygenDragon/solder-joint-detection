@@ -31,6 +31,7 @@ tflite::ErrorReporter* error_reporter = nullptr;
 const tflite::Model* model = nullptr;
 tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* input = nullptr;
+TfLiteTensor* output = nullptr; 
 
 // An area of memory to use for input, output, and intermediate arrays.
 constexpr int kTensorArenaSize = 730 * 1024;
@@ -79,6 +80,7 @@ void setup() {
     return;
   }
   input = interpreter->input(0);
+  output = interpreter->output(0);
   TF_LITE_REPORT_ERROR(error_reporter, "Setup Finish");
 }
 
@@ -98,10 +100,8 @@ void loop() {
   for (uint8_t i = 0; i < 10; ++i) {
     hx_drv_uart_print("8");
   }
-  TfLiteTensor* output = interpreter->output(0);
-  int8_t* data = output->data.int8;
   for (uint32_t i = 0; i < kPredictionSize; ++i) {
-    hx_drv_uart_print("%c", data[i]);
+    hx_drv_uart_print("%c", (output->data.int8)[i]);
   }
 
   free(input->data.int8);
