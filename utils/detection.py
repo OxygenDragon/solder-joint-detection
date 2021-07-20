@@ -35,9 +35,6 @@ def self_invoke(img):
     img = np.expand_dims(img, axis=0)
     img = np.expand_dims(img, axis=3)
 
-    if input_details[0]['dtype'] == np.float32:
-        floating_model = True
-
     height = input_details[0]['shape'][1]
     width = input_details[0]['shape'][2]
     print(height, width)
@@ -46,10 +43,9 @@ def self_invoke(img):
     interpreter.invoke()
     predictions = interpreter.get_tensor(output_details[0]['index'])
     predictions = np.reshape(predictions, -1)
-    print(predictions)
     img = np.reshape(img, (384, 384))
-    s1 = predictions.flatten
-    get_bounding_boxes(img, s1(), 1)
+    s1 = predictions.flatten()
+    get_bounding_boxes(img, s1, 1)
 
 
 def get_bounding_boxes(img, predictions, img_number):
@@ -59,7 +55,7 @@ def get_bounding_boxes(img, predictions, img_number):
     predictions = _detection_layer(predictions, num_classes=3, anchors=[(
         10, 14),  (23, 27),  (37, 58), ], img_size=[384, 384], data_format='NHWC')
     boxes, classes, scores = handle_predictions(
-        predictions, confidence=0.8, iou_threshold=0.5)
+        predictions, confidence=0.1, iou_threshold=0.5)
     draw_boxes(boxes, classes, scores, img, class_name)
     cv2.imshow('Detecting result', img)
     cv2.waitKey(1)
@@ -90,7 +86,6 @@ def handle_predictions(predictions, confidence=0.6, iou_threshold=0.5):
         boxes = np.concatenate(n_boxes)
         classes = np.concatenate(n_classes)
         scores = np.concatenate(n_scores)
-
         return boxes, classes, scores
 
     else:

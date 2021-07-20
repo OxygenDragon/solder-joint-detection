@@ -46,7 +46,6 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
   uint16_t width_delta = (640 - image_width) / 2;
   uint16_t height_delta = (480 - image_height) / 2;
   uint32_t img_index = 0;	
-  image_data = (int8_t*) img_ptr;
   // start signal
   for (uint8_t i = 0; i < 10; ++i) {
     hx_drv_uart_print("7");
@@ -60,10 +59,6 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
       // image transferring
       hx_drv_uart_print("%c", img_ptr[img_index++]);
     }
-  }
-
-  for (int i = 0; i < 10; ++i) {
-    hx_drv_uart_print("%d", img_ptr[i]);
   }
 
   // quantization input setup

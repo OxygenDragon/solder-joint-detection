@@ -95,17 +95,12 @@ void loop() {
   if (kTfLiteOk != interpreter->Invoke()) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed.");
   }
-
-  for (uint8_t i = 0; i < 6; ++i) {
-    hx_drv_uart_print("%d ", (output->data.int8)[i]);
-  }
-
   // sending predictions signals
   for (uint8_t i = 0; i < 10; ++i) {
     hx_drv_uart_print("8");
   }
   for (uint32_t i = 0; i < kPredictionSize; ++i) {
-    hx_drv_uart_print("%c", (output->data.int8)[i]);
+    hx_drv_uart_print("%d\n", (output->data.int8)[i]);
   }
 
   TF_LITE_REPORT_ERROR(error_reporter, "Send prediction done.");

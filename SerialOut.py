@@ -38,25 +38,21 @@ try:
                 # transferring predictions
                 byte_queue = []
                 byte_queue_count = 0
-                stop_point = PREDICTION_LEN / 576
                 # waiting for prediction start signal
                 while ser.inWaiting and start_signal_count != 10:
                     data = ser.read()
-                    print(data)
                     if data == b'8':
                         start_signal_count += 1
                     else:
                         start_signal_count = 0
                 start_signal_count = 0
-                while ser.inWaiting and byte_queue_count < stop_point:
-                    byte_queue += list(ser.read(576))
-                    byte_queue_count += 1
+                while ser.inWaiting:
+                    current_line = ser.readline().strip()
+                    value = current_line.decode('ascii')
+                    byte_queue.append(value)
+                    if (len(byte_queue) == PREDICTION_LEN):
+                        break
                 predictions = np.array(byte_queue, dtype=np.int8)
-                f = open("prediction.txt", 'w')
-                for x in range(PREDICTION_LEN):
-                    f.write(str(predictions[x]) + ', ')
-                f.close()
-                print(predictions)
                 get_bounding_boxes(data_array, predictions, count)
                 # self_invoke(data_array)
                 print("draw bouding box complete!")
