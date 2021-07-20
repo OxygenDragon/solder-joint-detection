@@ -1,7 +1,7 @@
 import serial
 import numpy as np
 import cv2
-from utils.detection import get_bounding_boxes
+from utils.detection import get_bounding_boxes, self_invoke
 
 PORT = '/dev/ttyUSB0'
 BAUD_RATE = 921600
@@ -51,14 +51,14 @@ try:
                 while ser.inWaiting and byte_queue_count < stop_point:
                     byte_queue += list(ser.read(576))
                     byte_queue_count += 1
-                for i in range(PREDICTION_LEN):
-                    byte_queue[i] = int(byte_queue[i])
                 predictions = np.array(byte_queue, dtype=np.int8)
                 f = open("prediction.txt", 'w')
                 for x in range(PREDICTION_LEN):
                     f.write(str(predictions[x]) + ', ')
                 f.close()
+                print(predictions)
                 get_bounding_boxes(data_array, predictions, count)
+                # self_invoke(data_array)
                 print("draw bouding box complete!")
                 img_data = []
                 break

@@ -20,6 +20,6 @@ limitations under the License.
 #include "tensorflow/lite/micro/micro_error_reporter.h"
 
 TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
-                      int image_height, int channels, int8_t** image_data);
+                      int image_height, int channels, int8_t* image_data);
 
 #endif  // TENSORFLOW_LITE_MICRO_EXAMPLES_HANDWRITING_IMAGE_PROVIDER_H_

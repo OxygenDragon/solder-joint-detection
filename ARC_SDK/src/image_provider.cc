@@ -24,7 +24,7 @@ hx_drv_sensor_image_config_t g_pimg_config;
 }
 
 TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
-                      int image_height, int channels, int8_t** image_data) {
+                      int image_height, int channels, int8_t* image_data) {
   static bool is_initialized = false;
   hx_drv_uart_initial(UART_BR_921600);
   // hx_drv_uart_initial(UART_BR_115200);
@@ -46,7 +46,7 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
   uint16_t width_delta = (640 - image_width) / 2;
   uint16_t height_delta = (480 - image_height) / 2;
   uint32_t img_index = 0;	
-  *image_data = (int8_t*) img_ptr;
+  image_data = (int8_t*) img_ptr;
   // start signal
   for (uint8_t i = 0; i < 10; ++i) {
     hx_drv_uart_print("7");
@@ -62,13 +62,17 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
     }
   }
 
+  for (int i = 0; i < 10; ++i) {
+    hx_drv_uart_print("%d", img_ptr[i]);
+  }
+
   // quantization input setup
   float pixel;
   for (int i = 0; i < image_width * image_height; ++i) { 
-    pixel = float(uint8_t((*image_data)[i])) / 255; // normalize
+    pixel = (float)((uint8_t)(img_ptr[i])) / 255; // normalize
     int32_t npixel = (int32_t)(pixel / kScale) + kZeroPoint;
-    (*image_data)[i] = (int8_t)pixel;
+    image_data[i] = (int8_t)npixel;
   }
-  
+  free(img_ptr);
   return kTfLiteOk;
 }

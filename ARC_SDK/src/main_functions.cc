@@ -49,8 +49,8 @@ void setup() {
   static tflite::MicroErrorReporter micro_error_reporter;
   error_reporter = &micro_error_reporter;
   hx_drv_uart_initial(UART_BR_921600);
-  TF_LITE_REPORT_ERROR(error_reporter, "start inferencing...");
   // hx_drv_uart_initial(UART_BR_115200);
+  TF_LITE_REPORT_ERROR(error_reporter, "start inferencing...");
 
   model = tflite::GetModel(model_tflite);
   if (model->version() != TFLITE_SCHEMA_VERSION) {
@@ -87,13 +87,17 @@ void setup() {
 void loop() {
   // Get image from provider
   if (kTfLiteOk != GetImage(error_reporter, kNumCols, kNumRows, kNumChannels,
-                            &(input->data.int8))) {
+        input->data.int8)) {
     TF_LITE_REPORT_ERROR(error_reporter, "Image capture failed.");
   }
 
   // invoke model for inferencing
   if (kTfLiteOk != interpreter->Invoke()) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed.");
+  }
+
+  for (uint8_t i = 0; i < 6; ++i) {
+    hx_drv_uart_print("%d ", (output->data.int8)[i]);
   }
 
   // sending predictions signals
@@ -104,7 +108,6 @@ void loop() {
     hx_drv_uart_print("%c", (output->data.int8)[i]);
   }
 
-  free(input->data.int8);
   TF_LITE_REPORT_ERROR(error_reporter, "Send prediction done.");
   RespondToDetection(error_reporter, output->data.int8);
 }

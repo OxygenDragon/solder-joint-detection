@@ -91,7 +91,7 @@ void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
     predict_count[i] = 0;
   for (int32_t i = 5; i < kPredictionSize; i += kSinglePredictSize) {
     confidence = score[i];
-    for (int8_t j = i + 1; j < 3; ++j) {
+    for (int8_t j = i + 1; j < i + 4; ++j) {
       if (score[j] > max_score) {
         max_score = score[j];
         max_class = j - i;
@@ -106,16 +106,18 @@ void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
   // preparing result string to sent
   // passed: 0
   // not passed: 1 insufficient short too_much
-  uint8_t result_str_int8[30];
+  uint8_t result_str_int8[5];
   uint8_t result_str_len;
   if (has_defect_joint) {
     result_str_int8[0] = 1;
-    result_str_int8[1] =predict_count[0];
-    result_str_int8[2] =predict_count[1];
-    result_str_int8[3] =predict_count[2];
+    result_str_int8[1] = predict_count[0];
+    result_str_int8[2] = predict_count[1];
+    result_str_int8[3] = predict_count[2];
+    result_str_int8[4] = (uint8_t)'\0';
     result_str_len = 4;
   } else {
     result_str_int8[0] = 0;
+    result_str_int8[1] = (uint8_t)'\0';
     result_str_len = 1;
   }
 

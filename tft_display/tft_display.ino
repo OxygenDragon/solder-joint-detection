@@ -6,18 +6,19 @@
 #include <Fonts/FreeSans9pt7b.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <string.h>
 
-#define TFT_CS  10 // TFT LCD CS PIN
-#define TFT_DC   8 // TFT DC(A0、RS) 
-#define TFT_RST  9 // TFT Reset
+#define TFT_CS   9 // TFT LCD CS PIN
+#define TFT_DC   7 // TFT DC(A0、RS) 
+#define TFT_RST  8 // TFT Reset
 
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-char status_str[20];
+char status_str[6];
 int has_defect = 0;
 int status_str_index = 0;
 String description_str;
-String class_str[3];
+char class_str[3][10];
 
 void setup(void) {
   
@@ -44,22 +45,26 @@ void setup(void) {
 }
 
 void receiveEvent(int numBytes){
+  Serial.println("received");
   tft.fillScreen(0);
-  
   while(Wire.available()){
     char c = Wire.read();
+    Serial.println(int(c));
     status_str[status_str_index++] = c;
   }
-  has_defect = (status_str[0] == '1');
+  has_defect = (int(status_str[0]) == 1);
   if (has_defect) {
     description_str = "Defect joint detected!\n";
-    class_str[0] = "Insufficient: " + status_str[1] + "\n";
-    class_str[1] = "Short: " + status_str[2] + "\n";
-    class_str[2] = "Too much: " + status_str[3] + "\n";
+    sprintf(class_str[0], "Insufficient: %d\n",int(status_str[1]));
+    sprintf(class_str[1], "Short: %d\n", int(status_str[2]));
+    sprintf(class_str[2], "Too much: %d\n", int(status_str[3]));
+  } else {
+    description_str = "PASSED!";
   }
 }
 
 void loop() {
+  Serial.println("loop");
   if (!has_defect) {
     tft.setCursor(20, 50);
     tft.setTextSize(1.8);
