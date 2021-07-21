@@ -50,14 +50,15 @@ def self_invoke(img):
 
 def get_bounding_boxes(img, predictions, img_number):
     cv2.imwrite("himax_image.png", img)
+    img_RGB = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR) #To draw RGB bounding boxes
     predictions = np.reshape(predictions, (1, 24, 24, 24))
     predictions = np.float32((predictions - out_zero_point) * out_scale)
     predictions = _detection_layer(predictions, num_classes=3, anchors=[(
         10, 14),  (23, 27),  (37, 58), ], img_size=[384, 384], data_format='NHWC')
     boxes, classes, scores = handle_predictions(
         predictions, confidence=0.1, iou_threshold=0.5)
-    draw_boxes(boxes, classes, scores, img, class_name)
-    cv2.imshow('Detecting result', img)
+    draw_boxes(boxes, classes, scores, img_RGB, class_name)
+    cv2.imshow('Detecting result', img_RGB)
     cv2.waitKey(1)
 
 
