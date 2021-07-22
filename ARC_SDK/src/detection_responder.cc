@@ -37,7 +37,7 @@ void FloatStrConversion(float input_float) {
   fra_part = int_buff % 1000;
 }
 
-// relu1 output, clipped when ouptut greater than 1
+// relu1 output, clipped when ouptut greater than 1 and less than 0
 float GetFloatOutput(int8_t input) {
   if ((float)((input - kOutputZero) * kOutputScale) > 1) 
     return 1.0;
@@ -49,26 +49,29 @@ float GetFloatOutput(int8_t input) {
 
 void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
   
-  int8_t confidence, max_score = -127, max_class = 0; 
+  int8_t max_score = -127, max_class = 0;
+  float confidence;
   uint8_t predict_count[3] = {0};
-  char defect_str[3][20];
   for (int32_t i = 4; i < kPredictionSize; i += kSinglePredictSize) {
-    confidence = score[i];
+    confidence = GetFloatOutput(score[i]);
+    if (confidence < kDefectThresh) continue;
     for (int8_t j = i + 1; j < i + 4; ++j) {
       if (score[j] > max_score) {
         max_score = score[j];
         max_class = j - i - 1;
-      } 
+      }
     }
-    if (GetFloatOutput(confidence) * GetFloatOutput(max_score) > kDefectThresh) {
+    if (confidence * GetFloatOutput(max_score) > kDefectThresh) {
       predict_count[max_class]++;
-      has_defect_joint = 1;
     }
+    max_score = -127;
   }
+  has_defect_joint = (predict_count[0] + predict_count[1] +
+      predict_count[2] != 0);
 
   // preparing result string to sent
-  // passed: 0
-  // not passed: 1 insufficient short too_much
+  // passed: 0,x,x,x
+  // not passed: 1,insufficient,short,too_much
   char result_str[20];
   uint8_t result_str_int8[20];
   sprintf(result_str, "%d,%d,%d,%d,",
@@ -76,7 +79,6 @@ void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
 
   for (uint8_t i = 0; i < strlen(result_str); ++i) {
     result_str_int8[i] = (uint8_t)result_str[i];
-    hx_drv_uart_print("%c", result_str[i]);
   }
 
   hx_drv_uart_print("i2c start: %d with address: %d\n",

@@ -2,61 +2,34 @@ import numpy as np
 import cv2
 import tensorflow as tf
 
-# get the bounding box of detecting image and show
-# arguments:
-# img:          ndarray, 2d array of detecting image
-# predictions:  list, 1d list of uint8 predictions from yolo output
-# return: none
-
 
 class_name = [
-    "insufficient",
-    "short   ",
-    "too much"
+    "poor",
+    "short",
+    "excess"
 ]
 out_zero_point = -23
 out_scale = 0.024364763870835304
+confidence_thresh = 0.1
 
 
-def self_invoke(img):
-    TF_MODEL_NAME = "ARC_SDK/src/model.tflite"
-    interpreter = tf.lite.Interpreter(model_path=TF_MODEL_NAME)
-    interpreter.allocate_tensors()
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
-    scale, zero_point = input_details[0]['quantization']
-    out_scale, out_zero_point = output_details[0]['quantization']
-
-    print(out_scale, out_zero_point)
-
-    img = img.astype(np.float32)
-    img /= 255
-    img = np.int8(img / scale + zero_point)
-    img = np.expand_dims(img, axis=0)
-    img = np.expand_dims(img, axis=3)
-
-    height = input_details[0]['shape'][1]
-    width = input_details[0]['shape'][2]
-    print(height, width)
-
-    interpreter.set_tensor(input_details[0]['index'], img)
-    interpreter.invoke()
-    predictions = interpreter.get_tensor(output_details[0]['index'])
-    predictions = np.reshape(predictions, -1)
-    img = np.reshape(img, (384, 384))
-    s1 = predictions.flatten()
-    get_bounding_boxes(img, s1, 1)
+# get the bounding box of detecting image and show
+# arguments:
+# img:          ndarray, 2d array of detecting image
+# predictions:  list, 1d list of int8 predictions from yolo output
+# return: none
 
 
 def get_bounding_boxes(img, predictions, img_number):
     cv2.imwrite("himax_image.png", img)
-    img_RGB = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR) #To draw RGB bounding boxes
+    # To draw RGB bounding boxes
+    img_RGB = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     predictions = np.reshape(predictions, (1, 24, 24, 24))
     predictions = np.float32((predictions - out_zero_point) * out_scale)
     predictions = _detection_layer(predictions, num_classes=3, anchors=[(
         10, 14),  (23, 27),  (37, 58), ], img_size=[384, 384], data_format='NHWC')
     boxes, classes, scores = handle_predictions(
-        predictions, confidence=0.1, iou_threshold=0.5)
+        predictions, confidence=confidence_thresh, iou_threshold=0.0)
     draw_boxes(boxes, classes, scores, img_RGB, class_name)
     cv2.imshow('Detecting result', img_RGB)
     cv2.waitKey(1)
@@ -142,15 +115,19 @@ def draw_boxes(boxes, classes, scores, img, class_name):
             top = (int)(box[1] - box[3]/2)
             right = (int)(box[0] + box[2]/2)
             bottom = (int)(box[1] + box[3]/2)
-            color = (0, 255, 0)
+            color = [
+                (164, 145, 250),
+                (63, 212, 162),
+                (232, 209, 77),
+            ]
             thick = 2
-            if top < 30:
-                cv2.putText(img, '{}: {:.2f}%'.format(
-                    class_name[cls], score * 100), (left, bottom + 20), 0, thick/3, color)
-            else:
-                cv2.putText(img, '{}: {:.2f}%'.format(
-                    class_name[cls], score * 100), (left, top - 10), 0, thick/3, color)
-            cv2.rectangle(img, (left, top), (right, bottom), color, thick)
+            cv2.putText(
+                img,
+                '{}: {:.2f}%'.format(class_name[cls], score * 100),
+                (left, bottom + 20) if top < 30 else (left, top - 10), 3,
+                thick / 3.5, color[cls], thickness=1
+            )
+            cv2.rectangle(img, (left, top), (right, bottom), color[cls], thick)
 
 
 def _get_size(shape, data_format):
@@ -205,3 +182,33 @@ def _detection_layer(predictions, num_classes, anchors, img_size, data_format):
 
     predictions = tf.concat([detections, classes], axis=-1)
     return predictions
+
+
+def self_invoke(img):
+    TF_MODEL_NAME = "ARC_SDK/src/model.tflite"
+    interpreter = tf.lite.Interpreter(model_path=TF_MODEL_NAME)
+    interpreter.allocate_tensors()
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    scale, zero_point = input_details[0]['quantization']
+    out_scale, out_zero_point = output_details[0]['quantization']
+
+    print(out_scale, out_zero_point)
+
+    img = img.astype(np.float32)
+    img /= 255
+    img = np.int8(img / scale + zero_point)
+    img = np.expand_dims(img, axis=0)
+    img = np.expand_dims(img, axis=3)
+
+    height = input_details[0]['shape'][1]
+    width = input_details[0]['shape'][2]
+    print(height, width)
+
+    interpreter.set_tensor(input_details[0]['index'], img)
+    interpreter.invoke()
+    predictions = interpreter.get_tensor(output_details[0]['index'])
+    predictions = np.reshape(predictions, -1)
+    img = np.reshape(img, (384, 384))
+    s1 = predictions.flatten()
+    get_bounding_boxes(img, s1, 1)
