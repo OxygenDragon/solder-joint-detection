@@ -22,14 +22,14 @@ constexpr int kNumChannels = 1;
 constexpr int kMaxImageSize = kNumCols * kNumRows * kNumChannels;
 constexpr int kPredictionSize = 13824; // 24 * 24 * 24
 constexpr int kSinglePredictSize = 8;
-constexpr float kDefectThresh = 0.6;
+constexpr float kDefectThresh = 0.1;
 // quantization parameters
 constexpr float kScale = 0.0039;
 constexpr int32_t kZeroPoint = -128;
 
 // output quantization parameters
-constexpr double kOutputScale = 0.1984986811876297;
-constexpr int8_t kOutputZero = 40;
+constexpr double kOutputScale = 0.024364763870835304;
+constexpr int8_t kOutputZero = -23;
 
 constexpr int kCategoryCount = 3;
 extern const char* kCategoryLabels[kCategoryCount];

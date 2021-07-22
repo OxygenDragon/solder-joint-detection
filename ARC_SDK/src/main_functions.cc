@@ -48,8 +48,8 @@ alignas(16) static uint8_t tensor_arena[kTensorArenaSize];
 void setup() {
   static tflite::MicroErrorReporter micro_error_reporter;
   error_reporter = &micro_error_reporter;
-  hx_drv_uart_initial(UART_BR_921600);
-  // hx_drv_uart_initial(UART_BR_115200);
+  // hx_drv_uart_initial(UART_BR_921600);
+  hx_drv_uart_initial(UART_BR_115200);
   TF_LITE_REPORT_ERROR(error_reporter, "start inferencing...");
 
   model = tflite::GetModel(model_tflite);

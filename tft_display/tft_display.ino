@@ -14,11 +14,9 @@
 
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-char status_str[6];
 int has_defect = 0;
-int status_str_index = 0;
-String description_str;
-char class_str[3][10];
+char received_str[4][5];
+unsigned long last;
 
 void setup(void) {
   
@@ -39,49 +37,47 @@ void setup(void) {
 
   Wire.begin(0x12);
   Wire.onReceive(receiveEvent);
-  Serial.begin(9600);
+  Serial.begin(57600);
   Serial.println("I2C Slave Started");
   tft.fillScreen(0);
+
+  last = millis();
 }
 
 void receiveEvent(int numBytes){
-  Serial.println("received");
+  
+  Serial.println("received");                                                                                                                                         
   tft.fillScreen(0);
+  int str_index = 0;
+  int char_index = 0;
   while(Wire.available()){
     char c = Wire.read();
-    Serial.println(int(c));
-    status_str[status_str_index++] = c;
+    if (c == ',') {
+      received_str[str_index++][char_index] = '\0';
+      char_index = 0;
+    } else {
+      received_str[str_index][char_index++] = c;
+    }
   }
-  has_defect = (int(status_str[0]) == 1);
-  if (has_defect) {
-    description_str = "Defect joint detected!\n";
-    sprintf(class_str[0], "Insufficient: %d\n",int(status_str[1]));
-    sprintf(class_str[1], "Short: %d\n", int(status_str[2]));
-    sprintf(class_str[2], "Too much: %d\n", int(status_str[3]));
-  } else {
-    description_str = "PASSED!";
-  }
+  Serial.println(received_str[0]);
+  has_defect = (received_str[0][0] == '1');
+  
 }
 
 void loop() {
-  Serial.println("loop");
+  unsigned long now = millis();
+  if (now - last < 50) return;
   if (!has_defect) {
     tft.setCursor(20, 50);
     tft.setTextSize(1.8);
-    tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
-    tft.print(description_str);
+    tft.setTextColor(ST7735_GREEN, ST7735_BLACK);
+    tft.print("PASSED!");
   } else {
-    tft.setCursor(20, 30);
-    tft.setTextSize(1.8);
-    tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
-    tft.print(description_str);
-
-    for (int i = 0; i < 3; ++i) {
-      tft.setCursor(20, 30 + 20 * (i + 1));
+    for (int i = 0; i < 4; ++i) {
+      tft.setCursor(20, 5 + 20 * (i));
       tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
-      tft.print(class_str[i]);
+      tft.print(received_str[i]);
     } 
   }
-
-  delay(50);
+  last = now;
 }

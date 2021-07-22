@@ -19,7 +19,6 @@ limitations under the License.
 #include "string"
 #include <cstring>
 namespace {
-uint8_t score_output[kCategoryCount];
 char* className[] = {
   "Insufficient", 
   "Short",
@@ -38,63 +37,27 @@ void FloatStrConversion(float input_float) {
   fra_part = int_buff % 1000;
 }
 
+// relu1 output, clipped when ouptut greater than 1
 float GetFloatOutput(int8_t input) {
   if ((float)((input - kOutputZero) * kOutputScale) > 1) 
     return 1.0;
+  else if ((float)((input - kOutputZero) * kOutputScale) < 0) 
+    return 0;
   else
     return (float)((input - kOutputZero) * kOutputScale);
 }
 
 void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
-  hx_drv_share_switch(SHARE_MODE_I2CM); // start using I2C
   
-  // TF_LITE_REPORT_ERROR(error_reporter, "\n\n");
-  // for (int i = 0; i < kCategoryCount; i++) {
-  //   char str[30];
-  //   float score_float = (score[i] + 128.0) / 2.55;
-  //   FloatStrConversion(score_float);
-  //   sprintf(str, "[%s]: %ld.%ld", className[i], int_part, fra_part);
-  //   TF_LITE_REPORT_ERROR(error_reporter, str);
-  //   if (score[i] > 0 && maxScore < score[i]) {
-  //     maxScore = score[i];
-  //     maxScore_float = score_float;
-  //     maxIndex = i;
-  //   }
-  //   score_output[i] = score[i] + 128;
-  // }
-
-  // char result_str[30];
-  // uint8_t result_str_int8[30]; // to be sent by I2C
-  // TF_LITE_REPORT_ERROR(error_reporter, "===== Inference Result =====");
-  // if(maxIndex != -1) {
-  //   char class_str[30];
-  //   char score_str[30];
-  //   FloatStrConversion(maxScore_float);
-
-  //   sprintf(class_str, "Result:     %s", className[maxIndex]);
-  //   sprintf(score_str, "Confidence: %ld.%ld", int_part, fra_part);
-  //   sprintf(result_str, "%s\n%ld.%ld", className[maxIndex], int_part, fra_part);
-  //   TF_LITE_REPORT_ERROR(error_reporter, class_str);
-  //   TF_LITE_REPORT_ERROR(error_reporter, score_str);
-  // } else {
-  //   TF_LITE_REPORT_ERROR(error_reporter, "Result: unknown");
-  //   sprintf(result_str, "unknown");
-  // }
-  // TF_LITE_REPORT_ERROR(error_reporter, "============================");
-
-  // for (int i = 0; i < strlen(result_str); i++) {
-  //   result_str_int8[i] = (uint8_t)result_str[i];
-  // }
-  int8_t confidence, max_score = -128, max_class; 
-  uint8_t predict_count[3];
-  for (int8_t i = 0; i < 3; ++i)
-    predict_count[i] = 0;
-  for (int32_t i = 5; i < kPredictionSize; i += kSinglePredictSize) {
+  int8_t confidence, max_score = -127, max_class = 0; 
+  uint8_t predict_count[3] = {0};
+  char defect_str[3][20];
+  for (int32_t i = 4; i < kPredictionSize; i += kSinglePredictSize) {
     confidence = score[i];
     for (int8_t j = i + 1; j < i + 4; ++j) {
       if (score[j] > max_score) {
         max_score = score[j];
-        max_class = j - i;
+        max_class = j - i - 1;
       } 
     }
     if (GetFloatOutput(confidence) * GetFloatOutput(max_score) > kDefectThresh) {
@@ -106,23 +69,20 @@ void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
   // preparing result string to sent
   // passed: 0
   // not passed: 1 insufficient short too_much
-  uint8_t result_str_int8[5];
-  uint8_t result_str_len;
-  if (has_defect_joint) {
-    result_str_int8[0] = 1;
-    result_str_int8[1] = predict_count[0];
-    result_str_int8[2] = predict_count[1];
-    result_str_int8[3] = predict_count[2];
-    result_str_int8[4] = (uint8_t)'\0';
-    result_str_len = 4;
-  } else {
-    result_str_int8[0] = 0;
-    result_str_int8[1] = (uint8_t)'\0';
-    result_str_len = 1;
+  char result_str[20];
+  uint8_t result_str_int8[20];
+  sprintf(result_str, "%d,%d,%d,%d,",
+      has_defect_joint, predict_count[0], predict_count[1], predict_count[2]); 
+
+  for (uint8_t i = 0; i < strlen(result_str); ++i) {
+    result_str_int8[i] = (uint8_t)result_str[i];
+    hx_drv_uart_print("%c", result_str[i]);
   }
 
+  hx_drv_uart_print("i2c start: %d with address: %d\n",
+      hx_drv_share_switch(SHARE_MODE_I2CM), ARDUINO_ADDR); // start using I2C
   // sending detections result to aruduino through i2c
   TF_LITE_REPORT_ERROR(error_reporter, "I2C Transmission: %d",
       hx_drv_i2cm_set_data(ARDUINO_ADDR, NULL, 0,
-        result_str_int8, result_str_len));
+        result_str_int8, strlen(result_str)));
 }

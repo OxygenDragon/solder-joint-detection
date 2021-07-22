@@ -20,6 +20,7 @@ try:
         # waiting for image start signal
         while ser.inWaiting and start_signal_count != 10:
             data = ser.read()
+            print(data)
             if data == b'7':
                 start_signal_count += 1
             else:
