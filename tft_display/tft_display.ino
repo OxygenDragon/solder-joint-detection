@@ -16,6 +16,7 @@
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 int has_defect = 0;
 char received_str[4][5];
+char display_str[4][20] = {0};
 unsigned long last;
 
 void setup(void) {
@@ -50,6 +51,8 @@ void receiveEvent(int numBytes){
   tft.fillScreen(0);
   int str_index = 0;
   int char_index = 0;
+  
+  // get i2c data 
   while(Wire.available()){
     char c = Wire.read();
     if (c == ',') {
@@ -59,9 +62,20 @@ void receiveEvent(int numBytes){
       received_str[str_index][char_index++] = c;
     }
   }
-  Serial.println(received_str[0]);
+
   has_defect = (received_str[0][0] == '1');
-  
+
+  // decode received data to display strings
+  if (has_defect) {
+    sprintf(display_str[0], "Defect detected!");
+  } else {
+    sprintf(display_str[0], "QC PASSED!!!");
+  }
+  sprintf(display_str[1], "Insufficient: %s", received_str[1]);
+  sprintf(display_str[2], "Short: %s", received_str[2]);
+  sprintf(display_str[3], "Too much: %s", received_str[3]);
+
+  Serial.println(display_str[0]);
 }
 
 void loop() {
@@ -71,12 +85,18 @@ void loop() {
     tft.setCursor(20, 50);
     tft.setTextSize(1.8);
     tft.setTextColor(ST7735_GREEN, ST7735_BLACK);
-    tft.print("PASSED!");
+    tft.print(display_str[0]);
   } else {
-    for (int i = 0; i < 4; ++i) {
-      tft.setCursor(20, 5 + 20 * (i));
+    tft.setCursor(15, 23);
+    tft.setTextSize(1.8);
+    tft.setTextColor(ST7735_BLUE, ST7735_BLACK);
+    tft.print(display_str[0]);
+    
+    for (int i = 1; i < 4; ++i) {
+      tft.setCursor(15, 23 + 25 * (i));
+      tft.setTextSize(1);
       tft.setTextColor(ST7735_WHITE, ST7735_BLACK);
-      tft.print(received_str[i]);
+      tft.print(display_str[i]);
     } 
   }
   last = now;
