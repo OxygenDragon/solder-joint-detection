@@ -69,11 +69,11 @@ void receiveEvent(int numBytes){
   if (has_defect) {
     sprintf(display_str[0], "Defect detected!");
   } else {
-    sprintf(display_str[0], "QC PASSED!!!");
+    sprintf(display_str[0], "QC PASSED !!!");
   }
-  sprintf(display_str[1], "Insufficient: %s", received_str[1]);
-  sprintf(display_str[2], "Short: %s", received_str[2]);
-  sprintf(display_str[3], "Too much: %s", received_str[3]);
+  sprintf(display_str[1], "Short: %s", received_str[2]);
+  sprintf(display_str[2], "Excess", received_str[3]);
+  sprintf(display_str[3], "Poor filled: %s", received_str[1]);
 
   Serial.println(display_str[0]);
 }
@@ -89,7 +89,7 @@ void loop() {
   } else {
     tft.setCursor(15, 23);
     tft.setTextSize(1.8);
-    tft.setTextColor(ST7735_BLUE, ST7735_BLACK);
+    tft.setTextColor(ST7735_, ST7735_BLACK);
     tft.print(display_str[0]);
     
     for (int i = 1; i < 4; ++i) {

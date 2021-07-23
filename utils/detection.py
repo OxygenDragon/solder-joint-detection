@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import tensorflow as tf
+from time import gmtime, strftime
 
 
 class_name = [
@@ -21,7 +22,6 @@ confidence_thresh = 0.1
 
 
 def get_bounding_boxes(img, predictions, img_number):
-    cv2.imwrite("himax_image.png", img)
     # To draw RGB bounding boxes
     img_RGB = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     predictions = np.reshape(predictions, (1, 24, 24, 24))
@@ -32,7 +32,22 @@ def get_bounding_boxes(img, predictions, img_number):
         predictions, confidence=confidence_thresh, iou_threshold=0.0)
     draw_boxes(boxes, classes, scores, img_RGB, class_name)
     cv2.imshow('Detecting result', img_RGB)
-    cv2.waitKey(1)
+    key = cv2.waitKey(1)
+    image_window_handler(key, img_RGB, img_number)
+
+
+def image_window_handler(key, frame, img_number):
+    if key % 256 == 27:
+        # ESC pressed
+        print("Escape hit, closing...")
+        cv2.destroyAllWindows()
+        exit(0)
+    elif key % 256 == 32:
+        # SPACE pressed
+        current_time = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
+        img_name = "detection_{}_{}.png".format(img_number, current_time)
+        cv2.imwrite(img_name, frame)
+        print("{} written!".format(img_name))
 
 
 def handle_predictions(predictions, confidence=0.6, iou_threshold=0.5):

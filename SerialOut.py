@@ -13,10 +13,13 @@ img_data = []
 predicitons = []
 start_signal_count = 0
 count = 0
+
 try:
     ser.reset_input_buffer()
+    # cv2 window setting up
     print("pending start signal...")
     while True:
+        print(ser.inWaiting())
         # waiting for image start signal
         while ser.inWaiting and start_signal_count != 10:
             data = ser.read()
