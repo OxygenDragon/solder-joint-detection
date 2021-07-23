@@ -88,4 +88,21 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 
   1. Power up WE-I Plus and Arduino, one should see the QC test result from the TFT display, there were two results:
      1. QC PASSED! - indicates that there were no defected joint detected on the current frame
-     2. Defect detected! - indicates that there might have some specification problems on the current frame, the amount of defected joints of each classes would also been shownk 
+     2. Defect detected! - indicates that there might have some specification problems on the current frame, the amount of defected joints of each classes would also been shown 
+
+- Note
+
+  - If the scene is too dark for you, you could alway adjust the **variable resistor** on the board to adjust the light for better inferencing environment
+
+## Hardware / Software Setup
+
+### Hardware setup
+
+1. Develop board / modules
+
+2. Schematic Diagram
+
+   <p align="center">
+   <img src="./pictures/schematic.png" alt="board" width="750" align="center"/>
+   </p> 
+   <p align='center'>Device Image</p>
