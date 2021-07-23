@@ -11,8 +11,6 @@ class_name = [
 ]
 out_zero_point = -23
 out_scale = 0.024364763870835304
-confidence_thresh = 0.1
-
 
 # get the bounding box of detecting image and show
 # arguments:
@@ -21,7 +19,8 @@ confidence_thresh = 0.1
 # return: none
 
 
-def get_bounding_boxes(img, predictions, img_number):
+def get_bounding_boxes(img, predictions, img_number, confidence_thresh,
+                       iou_thresh):
     # To draw RGB bounding boxes
     img_RGB = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     predictions = np.reshape(predictions, (1, 24, 24, 24))
@@ -29,7 +28,7 @@ def get_bounding_boxes(img, predictions, img_number):
     predictions = _detection_layer(predictions, num_classes=3, anchors=[(
         10, 14),  (23, 27),  (37, 58), ], img_size=[384, 384], data_format='NHWC')
     boxes, classes, scores = handle_predictions(
-        predictions, confidence=confidence_thresh, iou_threshold=0.0)
+        predictions, confidence=confidence_thresh, iou_threshold=iou_thresh)
     draw_boxes(boxes, classes, scores, img_RGB, class_name)
     cv2.imshow('Detecting result', img_RGB)
     key = cv2.waitKey(1)

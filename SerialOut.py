@@ -1,12 +1,36 @@
 import serial
 import numpy as np
 import cv2
+import argparse
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from utils.detection import get_bounding_boxes, self_invoke
 
-PORT = '/dev/ttyUSB0'
-BAUD_RATE = 921600
+
 IMG_SIZE = (384, 384)
 PREDICTION_LEN = 24 * 24 * 24  # grid_len * grid_len * yolo
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--port", help="specify the port of WE-1 Plus",
+                    dest="port", default="ttyUSB0")
+parser.add_argument("-b", "--baud", help="specify the baud rate of transferring\
+                     image and predictions",
+                    dest="baud", default=921600)
+parser.add_argument("-t", "--thresh", help="specify the thresh of detecting",
+                    dest="thresh", default=0.15)
+parser.add_argument("-i", "--iou_thresh", help="specify the iou thresh of\
+                    detecting",
+                    dest="iou_thresh", default=0.1)
+args = parser.parse_args()
+
+
+PORT = args.port
+BAUD_RATE = args.baud
+THRESH = args.thresh
+IOU_THRESH = args.iou_thresh
+
+print("\nArguments used:\nPort: {}, Baud rate: {}\nConf thresh: {}, IOU thresh: {}\n"
+      .format(PORT, BAUD_RATE, THRESH, IOU_THRESH))
 ser = serial.Serial(PORT, BAUD_RATE)
 
 img_data = []
@@ -56,7 +80,8 @@ try:
                     if (len(byte_queue) == PREDICTION_LEN):
                         break
                 predictions = np.array(byte_queue, dtype=np.int8)
-                get_bounding_boxes(data_array, predictions, count)
+                get_bounding_boxes(data_array, predictions, count, THRESH,
+                                   IOU_THRESH)
                 # self_invoke(data_array)
                 print("draw bouding box complete!")
                 img_data = []
