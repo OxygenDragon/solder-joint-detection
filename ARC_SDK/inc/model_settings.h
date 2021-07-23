@@ -24,12 +24,12 @@ constexpr int kPredictionSize = 13824; // 24 * 24 * 24
 constexpr int kSinglePredictSize = 8;
 constexpr float kDefectThresh = 0.1;
 // quantization parameters
-constexpr float kScale = 0.0039;
+constexpr float kScale = 0.00392117677256465;
 constexpr int32_t kZeroPoint = -128;
 
 // output quantization parameters
-constexpr double kOutputScale = 0.024364763870835304;
-constexpr int8_t kOutputZero = -23;
+constexpr double kOutputScale = 0.04109394922852516;
+constexpr int8_t kOutputZero = -16;
 
 constexpr int kCategoryCount = 3;
 extern const char* kCategoryLabels[kCategoryCount];

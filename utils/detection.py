@@ -9,8 +9,8 @@ class_name = [
     "short",
     "excess"
 ]
-out_zero_point = -23
-out_scale = 0.024364763870835304
+out_zero_point = -16
+out_scale = 0.04109394922852516
 
 # get the bounding box of detecting image and show
 # arguments:
@@ -147,7 +147,7 @@ def draw_boxes(boxes, classes, scores, img, class_name):
 def _get_size(shape, data_format):
     if len(shape) == 4:
         shape = shape[1:]
-    return shape[1:3] if data_format == 'NCHW' else shape[0:2]
+    return shape[0:2]
 
 
 def _detection_layer(predictions, num_classes, anchors, img_size, data_format):
@@ -157,11 +157,6 @@ def _detection_layer(predictions, num_classes, anchors, img_size, data_format):
     grid_size = _get_size(shape, data_format)
     dim = grid_size[0] * grid_size[1]
     bbox_attrs = 5 + num_classes
-
-    if data_format == 'NCHW':
-        predictions = tf.reshape(
-            predictions, [-1, num_anchors * bbox_attrs, dim])
-        predictions = tf.transpose(predictions, [0, 2, 1])
 
     predictions = tf.reshape(predictions, [-1, num_anchors * dim, bbox_attrs])
 
