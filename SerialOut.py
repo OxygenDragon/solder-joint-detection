@@ -4,8 +4,8 @@ import cv2
 import argparse
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-from utils.detection import get_bounding_boxes, self_invoke
-
+from utils.TfliteInference import self_invoke
+from utils.detection import get_bounding_boxes
 
 IMG_SIZE = (384, 384)
 PREDICTION_LEN = 24 * 24 * 24  # grid_len * grid_len * yolo
@@ -29,9 +29,15 @@ BAUD_RATE = args.baud
 THRESH = args.thresh
 IOU_THRESH = args.iou_thresh
 
-print("\nArguments used:\nPort: {}, Baud rate: {}\nConf thresh: {}, IOU thresh: {}\n"
+print("\nArguments used:\nPort: {},\t\tBaud rate: {}\nConf thresh: {},\tIOU thresh: {}\n"
       .format(PORT, BAUD_RATE, THRESH, IOU_THRESH))
-ser = serial.Serial(PORT, BAUD_RATE)
+
+try:
+    ser = serial.Serial(PORT, BAUD_RATE)
+except serial.serialutil.SerialException:
+    print("[Error] Specified port device not found\nAbort program\n")
+    exit(-1)
+
 
 img_data = []
 predicitons = []
