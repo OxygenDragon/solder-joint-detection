@@ -16,7 +16,6 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 ### Installation
 
 1. Compile and generate image file for uploading to Himax WE-I Plus EVB
-
    Before started, make sure that `lrzsz` is installed in your computer
 
    ```bash
@@ -49,7 +48,6 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 4. Computer library settings
 
    - requirement: Python 3.9.6, pip 20.3.4
-
    - install pip libraries with
 
      ````bash
@@ -89,8 +87,8 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 - Without computer / laptop
 
   1. Power up WE-I Plus and Arduino, one should see the QC test result from the TFT display, there were two results:
-     1. **QC PASSED!** - indicates that there were no defected joint detected on the current frame
-     2. **Defect detected!** - indicates that there might have some specification problems on the current frame, the amount of defected joints of each classes would also been shown 
+     (1) **QC PASSED!** - indicates that there were no defected joint detected on the current frame
+     (2) **Defect detected!** - indicates that there might have some specification problems on the current frame, the amount of defected joints of each classes would also been shown 
 
 - Note
 
@@ -111,7 +109,7 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
    <p align="center">
    <img src="./pictures/schematic.png" alt="board" width="750" align="center"/>
    </p> 
-   <p align='center'>Device Image</p>
+   <p align='center'>Schematic Diagram</p>
 
 ### Software setup
 
@@ -156,7 +154,7 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
    <p align="center">
    <img src="./pictures/flowchart.png" alt="board" width="750" align="center"/>
    </p> 
-   <p align='center'>Device Image</p>
+   <p align='center'>Flow chart</p>
 
 3. Explanation
 
