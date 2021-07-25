@@ -4,8 +4,8 @@ import cv2
 import argparse
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-from utils.TfliteInference import self_invoke
 from utils.detection import get_bounding_boxes
+from utils.TfliteInference import self_invoke
 
 IMG_SIZE = (384, 384)
 PREDICTION_LEN = 24 * 24 * 24  # grid_len * grid_len * yolo
@@ -29,8 +29,9 @@ BAUD_RATE = args.baud
 THRESH = args.thresh
 IOU_THRESH = args.iou_thresh
 
-print("\nArguments used:\nPort: {},\t\tBaud rate: {}\nConf thresh: {},\tIOU thresh: {}\n"
-      .format(PORT, BAUD_RATE, THRESH, IOU_THRESH))
+print("\nArguments used:\nPort: {},\t\tBaud rate: {}".format(
+    PORT, BAUD_RATE))
+print("Conf thresh: {},\tIOU thresh: {}\n".format(THRESH, IOU_THRESH))
 
 try:
     ser = serial.Serial(PORT, BAUD_RATE)

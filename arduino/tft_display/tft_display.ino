@@ -8,9 +8,9 @@
 #include <Wire.h>
 #include <string.h>
 
-#define TFT_CS   9 // TFT LCD CS PIN
 #define TFT_DC   7 // TFT DC(A0、RS) 
 #define TFT_RST  8 // TFT Reset
+#define TFT_CS   9 // TFT LCD CS PIN
 
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);

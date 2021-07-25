@@ -25,8 +25,10 @@ def get_bounding_boxes(img, predictions, img_number, confidence_thresh,
     img_RGB = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     predictions = np.reshape(predictions, (1, 24, 24, 24))
     predictions = np.float32((predictions - out_zero_point) * out_scale)
-    predictions = _detection_layer(predictions, num_classes=3, anchors=[(
-        10, 14),  (23, 27),  (37, 58), ], img_size=[384, 384], data_format='NHWC')
+    predictions = _detection_layer(predictions, num_classes=3,
+                                   anchors=[(10, 14),  (23, 27),  (37, 58)],
+                                   img_size=[384, 384],
+                                   data_format='NHWC')
     boxes, classes, scores = handle_predictions(
         predictions, confidence=confidence_thresh, iou_threshold=iou_thresh)
     draw_boxes(boxes, classes, scores, img_RGB, class_name)
@@ -115,7 +117,6 @@ def nms_boxes(boxes, classes, scores, iou_threshold):
             order = order[inds + 1]
 
         keep = np.array(keep)
-
         nboxes.append(b[keep])
         nclasses.append(c[keep])
         nscores.append(s[keep])
@@ -161,9 +162,7 @@ def _detection_layer(predictions, num_classes, anchors, img_size, data_format):
     predictions = tf.reshape(predictions, [-1, num_anchors * dim, bbox_attrs])
 
     stride = (img_size[0] // grid_size[0], img_size[1] // grid_size[1])
-
     anchors = [(a[0] / stride[0], a[1] / stride[1]) for a in anchors]
-
     box_centers, box_sizes, confidence, classes = tf.split(
         predictions, [2, 2, 1, num_classes], axis=-1)
 

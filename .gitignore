@@ -8,10 +8,10 @@ PCB/cfg/weights/yolov4-tiny-custom_*
 PCB/cfg/yolov4-tiny.conv.29
 *.ipynb_checkpoints/
 crop_img/
-*.vscode/
 *.map
 himax_pictures/*
 yolo_related/annotations/*
 *.pyc
 *.elf
 *.img
+*.o
