@@ -16,6 +16,7 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 ### Installation
 
 1. Compile and generate image file for uploading to Himax WE-I Plus EVB
+
    Before started, make sure that `lrzsz` is installed in your computer
 
    ```bash
