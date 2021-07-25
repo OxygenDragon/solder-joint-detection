@@ -17,6 +17,8 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 
 1. Compile and generate image file for uploading to Himax WE-I Plus EVB
 
+   Before started, make sure that `lrzsz` is installed in your computer
+
    ```bash
    $ cd himax_tflm && make downloads # download himax sdk
    $ cd ARC_SDK
@@ -138,8 +140,8 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 
      |                     | yolov3-tiny optimized | yolov3-tiny original |
      | ------------------- | --------------------- | -------------------- |
-     | weight size         | 604 KB                | 34.7 MB              |
-     | mAP                 | 80.52%                |                      |
+     | .weight size        | 604 KB                | 34.7 MB              |
+     | mAP                 | 80.52%                | 81.41%               |
      | output number       | 1                     | 2                    |
      | activation function | relu6                 | leaky relu           |
 
@@ -155,3 +157,32 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
    <img src="./pictures/flowchart.png" alt="board" width="750" align="center"/>
    </p> 
    <p align='center'>Device Image</p>
+
+3. Explanation
+
+   Our system is able to operate with/without computer connection. With computer connection, the required data, such as image, predictions, would be  sent to the serial through UART protocol. After gathering sufficient requirements, our program would draw the bounding box on the image received by the prediction. Though this may consume some time to decode the predictions to bounding boxes, we have reduce lots of calculation time with substituting the output *sigmoid* function with *relu1*, which need not to have lots of exponential calculations.
+
+   On the other hand, the TFT display would also shows the texts indicating the amount of each classes of defected joints if the Arduino is powered up. It provides the fastest way to have the user interact with the device, so the device could work even if the computer is not in present!
+
+
+
+## Results
+
+### Hardware results
+
+|           Result 1 (Defect detected)            |              Result 2 (QC passed)               |
+| :---------------------------------------------: | :---------------------------------------------: |
+| ![device-test-1](./pictures/device_test_1.jpeg) | ![device-test-1](./pictures/device_test_2.jpeg) |
+
+### Software results
+
+|                  Result 1                  |                  Result 2                  |
+| :----------------------------------------: | :----------------------------------------: |
+| ![soft-test-1](./pictures/soft_test_1.png) | ![soft-test-2](./pictures/soft_test_2.png) |
+
+### Time consumption breakdown
+
+- Get image (including transfer data to computer): 1.931 sec
+- Invoke model: 0.575 sec
+- Predict results (including transfer data to computer): 0.749 sec
+- **Frames per minutes**: 18.5 frames

@@ -95,6 +95,7 @@ void loop() {
   if (kTfLiteOk != interpreter->Invoke()) {
     TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed.");
   }
+
   // sending predictions signals
   for (uint8_t i = 0; i < 10; ++i) {
     hx_drv_uart_print("8");
