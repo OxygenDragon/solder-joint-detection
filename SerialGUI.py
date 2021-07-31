@@ -1,8 +1,7 @@
-from numpy.lib.npyio import save
 from utils.detection import get_bounding_boxes
 from utils.TfliteInference import self_invoke
 from time import gmtime, strftime
-from PIL import Image
+from PIL import Image, ImageTk
 import serial
 import numpy as np
 import tkinter as tk
@@ -164,8 +163,16 @@ def capture_stream():
     save_btn['command'] = save_handler
     exit_btn['command'] = exit_handler
 
+
+    # image showing setup
+    img_pil = Image.fromarray(img_RGB)
+    img_tk = ImageTk.PhotoImage(image=img_pil)
+    captured_frame.configure(image=img_tk)
+    captured_frame.image = img_tk
+
     window.after(10, capture_stream)
 
 
 capture_stream()
 window.mainloop()
+cv2.destroyAllWindows()
