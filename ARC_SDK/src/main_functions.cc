@@ -1,6 +1,7 @@
 #include "main_functions.h"
 
 #include "detection_responder.h"
+#include "joystick_handler.h"
 #include "image_provider.h"
 #include "model_data.h"
 #include "model_settings.h"
@@ -17,6 +18,12 @@ const tflite::Model* model = nullptr;
 tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* input = nullptr;
 TfLiteTensor* output = nullptr; 
+
+int8_t bias_x = 0;
+int8_t bias_y = 0;
+hx_drv_gpio_config_t gpio_0;
+hx_drv_gpio_config_t gpio_1;
+hx_drv_gpio_config_t gpio_2;
 
 // An area of memory to use for input, output, and intermediate arrays.
 constexpr int kTensorArenaSize = 730 * 1024;
@@ -55,6 +62,20 @@ void setup() {
   // micro_op_resolver.AddResizeNearestNeighbor();
   // micro_op_resolver.AddConcatenation();
 
+  // GPIO port initialization
+  gpio_0.gpio_pin = HX_DRV_PGPIO_0;
+  gpio_1.gpio_pin = HX_DRV_PGPIO_1;
+  gpio_2.gpio_pin = HX_DRV_PGPIO_2;
+  gpio_0.gpio_direction = HX_DRV_GPIO_INPUT;
+  gpio_1.gpio_direction = HX_DRV_GPIO_INPUT;
+  gpio_2.gpio_direction = HX_DRV_GPIO_INPUT;
+  gpio_0.gpio_data = 0;
+  gpio_1.gpio_data = 0;
+  gpio_2.gpio_data = 0;
+  hx_drv_gpio_initial(&gpio_0);
+  hx_drv_gpio_initial(&gpio_1);
+  hx_drv_gpio_initial(&gpio_2);
+
   static tflite::MicroInterpreter static_interpreter(
       model, micro_op_resolver, tensor_arena, kTensorArenaSize, error_reporter);
   interpreter = &static_interpreter;
@@ -70,9 +91,14 @@ void setup() {
 }
 
 void loop() {
+  // get joystick status
+  int8_t joystick_state = GetJoyStickState(&gpio_0, &gpio_1, &gpio_2);
+  GetImageBias(joystick_state, &bias_x, &bias_y);
+  JoystickSignalAck();
+
   // Get image from provider
   if (kTfLiteOk != GetImage(error_reporter, kNumCols, kNumRows, kNumChannels,
-        input->data.int8)) {
+        input->data.int8, bias_x, bias_y)) {
     TF_LITE_REPORT_ERROR(error_reporter, "Image capture failed.");
   }
 

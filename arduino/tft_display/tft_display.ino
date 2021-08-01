@@ -12,12 +12,30 @@
 #define TFT_RST  8 // TFT Reset
 #define TFT_CS   9 // TFT LCD CS PIN
 
+#define VRX A0
+#define VRY A1
+#define GPIO0 6
+#define GPIO1 4
+#define GPIO2 5
+
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 int has_defect = 0;
-char received_str[4][5];
+char received_str[5][5];
 char display_str[4][20] = {0};
 unsigned long last;
+
+/* Joystick state
+  0: neutral
+  1: up
+  2: down
+  3: left
+  4: right
+*/
+int8_t current_joy_state = 0;
+int8_t state_set = 0;
+int8_t position_x = 0;
+int8_t position_y = 0;
 
 void setup(void) {
   
@@ -35,6 +53,12 @@ void setup(void) {
   tft.setCursor(0, 80);
   tft.setTextColor(ST77XX_YELLOW);
   tft.setFont(&FreeSans9pt7b);
+
+  pinMode(VRX, INPUT);
+  pinMode(VRY, INPUT);
+  pinMode(GPIO0, OUTPUT);
+  pinMode(GPIO1, OUTPUT);
+  pinMode(GPIO2, OUTPUT);
 
   Wire.begin(0x12);
   Wire.onReceive(receiveEvent);
@@ -62,8 +86,14 @@ void receiveEvent(int numBytes){
       received_str[str_index][char_index++] = c;
     }
   }
+  if (received_str[0][0] == '1') {
+    // acknoledge of joystick signal
+    state_set = 0;
+    current_joy_state = 0;
+    return;
+  }
 
-  has_defect = (received_str[0][0] == '1');
+  has_defect = (received_str[1][0] == '1');
 
   // decode received data to display strings
   if (has_defect) {
@@ -71,14 +101,71 @@ void receiveEvent(int numBytes){
   } else {
     sprintf(display_str[0], "QC PASSED !!!");
   }
-  sprintf(display_str[1], "Short: %s", received_str[2]);
-  sprintf(display_str[2], "Excess", received_str[3]);
-  sprintf(display_str[3], "Poor filled: %s", received_str[1]);
+  sprintf(display_str[1], "Short: %s", received_str[3]);
+  sprintf(display_str[2], "Excess", received_str[4]);
+  sprintf(display_str[3], "Poor filled: %s", received_str[2]);
 
   Serial.println(display_str[0]);
 }
 
 void loop() {
+  position_x = analogRead(VRX);
+  position_y = analogRead(VRY);
+  // determine joystick state
+  if (!state_set) {
+    current_joy_state = 0;
+    if (position_x > 1000) {
+      state_set = 1;
+      current_joy_state = 1;
+    }
+    if (position_x < 20) {
+      state_set = 1;
+      current_joy_state = 2;
+    }
+    if (position_y > 1000) {
+      state_set = 1;
+      current_joy_state = 3;
+    }
+    if (position_y < 20) {
+      state_set = 1;
+      current_joy_state = 4;
+    }
+  }
+  if (state_set) {
+    switch (current_joy_state) {
+      case 0:
+       digitalWrite(GPIO0, LOW); 
+       digitalWrite(GPIO1, LOW); 
+       digitalWrite(GPIO2, LOW); 
+       break;
+      case 1:
+       digitalWrite(GPIO0, LOW); 
+       digitalWrite(GPIO1, LOW); 
+       digitalWrite(GPIO2, HIGH); 
+       break;
+      case 2:
+       digitalWrite(GPIO0, LOW); 
+       digitalWrite(GPIO1, HIGH); 
+       digitalWrite(GPIO2, LOW); 
+       break;
+      case 3:
+       digitalWrite(GPIO0, LOW); 
+       digitalWrite(GPIO1, HIGH); 
+       digitalWrite(GPIO2, HIGH); 
+       break;
+      case 4:
+       digitalWrite(GPIO0, HIGH); 
+       digitalWrite(GPIO1, LOW); 
+       digitalWrite(GPIO2, LOW); 
+       break;
+    }
+  } else {
+   digitalWrite(GPIO0, LOW); 
+   digitalWrite(GPIO1, LOW); 
+   digitalWrite(GPIO2, LOW); 
+  }
+  
+
   unsigned long now = millis();
   if (now - last < 50) return;
   if (!has_defect) {
