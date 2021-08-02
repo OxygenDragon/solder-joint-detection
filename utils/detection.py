@@ -34,8 +34,8 @@ def get_bounding_boxes(img, predictions, img_number, confidence_thresh,
     draw_boxes(boxes, classes, scores, img_RGB, class_name)
     # cv2.imshow('Detecting result', img_RGB)
     # key = cv2.waitKey(1)
-    image_window_handler(key, img_RGB, img_number)
-    return img_RGB, (boxes != None)
+    # image_window_handler(key, img_RGB, img_number)
+    return img_RGB, not boxes is None
 
 
 def image_window_handler(key, frame, img_number):

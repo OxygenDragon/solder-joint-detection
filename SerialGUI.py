@@ -15,7 +15,7 @@ IMG_SIZE = (384, 384)
 PREDICTION_LEN = 24 * 24 * 24  # grid_len * grid_len * yolo
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--port", help="specify the port of WE-1 Plus",
-                    dest="port", default="ttyUSB0")
+                    dest="port", default="/dev/ttyUSB0")
 parser.add_argument("-b", "--baud", help="specify the baud rate of transferring\
                      image and predictions",
                     dest="baud", default=921600)
@@ -26,9 +26,9 @@ parser.add_argument("-i", "--iou_thresh", help="specify the iou thresh of\
                     dest="iou_thresh", default=0.1)
 args = parser.parse_args()
 PORT = args.port
-BAUD_RATE = args.baud
-THRESH = args.thresh
-IOU_THRESH = args.iou_thresh
+BAUD_RATE = int(args.baud)
+THRESH = float(args.thresh)
+IOU_THRESH = float(args.iou_thresh)
 
 # open serial port
 try:
@@ -36,6 +36,43 @@ try:
 except serial.serialutil.SerialException:
     print("[Error] Specified port device not found\nAbort program\n")
     exit(-1)
+
+has_defect = 0
+is_paused = 0
+frame_count = 0
+status_str = ''
+frame_count_str = ''
+detect_result_str = ''
+img_RGB = np.array([0])
+
+
+def pause_handler():
+    global is_paused
+    global status_str
+    is_paused = not is_paused
+    if is_paused:
+        status_str = "Image capture paused!"
+        pause_btn['text'] = 'Resume'
+    else:
+        status_str = 'Image capture resumed'
+        pause_btn['text'] = 'Pause'
+    str_label3['text'] = status_str
+
+
+def save_handler():
+    global img_RGB
+    global frame_count
+    global status_str
+    current_time = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
+    img_name = "detection_{}_{}.png".format(frame_count, current_time)
+    cv2.imwrite(img_name, img_RGB)
+    status_str = "Image Saved successfully"
+    str_label3['text'] = status_str
+    print("{}\nwritten!".format(img_name))
+
+
+def exit_handler():
+    exit(0)
 
 
 # gui parameters
@@ -45,14 +82,15 @@ align_mode = 'nswe'
 window = tk.Tk()
 window.title("Solder Joint Inspection")
 window.geometry("600x400")
+window.configure(bg='floral white')
 window.resizable(0, 0)  # not resizable
 
-captured_frame = tk.Frame(
-    window, width=IMG_SIZE[0], height=IMG_SIZE[1], bg='blue')
+captured_frame = tk.Label(
+    window, width=IMG_SIZE[0], height=IMG_SIZE[1], bg='white')
 message_frame = tk.Frame(
-    window, width=IMG_SIZE[0]/2, height=IMG_SIZE[1]/2, bg='yellow')
+    window, width=IMG_SIZE[0]/2, height=IMG_SIZE[1]/2, bg='white')
 operate_frame = tk.Frame(
-    window, width=IMG_SIZE[0]/2, height=IMG_SIZE[1]/2, bg='red')
+    window, width=IMG_SIZE[0]/2, height=IMG_SIZE[1]/2, bg='floral white')
 
 captured_frame.grid(column=0, row=0, padx=pad, pady=pad,
                     rowspan=2, sticky=align_mode)
@@ -60,36 +98,32 @@ message_frame.grid(column=1, row=0, padx=pad, pady=pad, sticky=align_mode)
 operate_frame.grid(column=1, row=1, padx=pad, pady=pad, sticky=align_mode)
 
 
-# ser.reset_input_buffer()  # clear input buffer
+ser.reset_input_buffer()  # clear input buffer
 
-has_defect = 0
-is_paused = 0
-frame_count = 0
-status_str = ''
-img_RGB = np.array()
+# message frame setup
+str_label1 = tk.Label(
+    message_frame, text=frame_count_str, width=23, height=6, bg='white')
+str_label2 = tk.Label(
+    message_frame, text=detect_result_str, width=23, height=6, bg='white')
+str_label2.config(font=("Courier", 10, 'bold'))
+str_label3 = tk.Label(
+    message_frame, text=status_str, width=23, height=6, bg='white')
+str_label1.grid(column=0, row=0)
+str_label2.grid(column=0, row=1)
+str_label3.grid(column=0, row=2)
 
-def pause_handler():
-    global is_paused
-    global status_str
-    is_paused = not is_paused
-    if is_paused:
-        status_str = "Image capture paused!"
-    else:
-        status_str = ''
+# operate frame setup
+pause_btn = tk.Button(
+    operate_frame, text="Resume" if is_paused else "Pause", width=20)
+save_btn = tk.Button(operate_frame, text="Save Image", width=20)
+exit_btn = tk.Button(operate_frame, text="Exit")
+pause_btn.grid(column=0, row=0)
+save_btn.grid(column=0, row=1)
+exit_btn.grid(column=0, row=2)
+pause_btn['command'] = pause_handler
+save_btn['command'] = save_handler
+exit_btn['command'] = exit_handler
 
-def save_handler():
-    global img_RGB
-    global frame_count
-    global status_str
-    current_time = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
-    img_name = "detection_{}_{}.png".format(frame_count, current_time)
-    cv2.imwrite(img_name, img_RGB)
-    status_str = "Last saved frame: {}".format(img_name)
-    print("{} written!".format(img_name))
-
-def exit_handler():
-    exit(0)
-    
 
 def capture_stream():
     img_data = []
@@ -142,27 +176,12 @@ def capture_stream():
     frame_count_str = "Frame no.{}".format(frame_count)
     if has_defect:
         detect_result_str = "Defect joint detected!"
+        str_label2['fg'] = 'IndianRed2'
     else:
         detect_result_str = "Board QC test passed!"
-    str_label1 = tk.Label(message_frame, text=frame_count_str)
-    str_label2 = tk.Label(message_frame, text=detect_result_str)
-    str_label3 = tk.Label(message_frame, text=status_str)
-    str_label1.grid(column=0, row=0)
-    str_label2.grid(column=0, row=1)
-    str_label3.grid(column=0, row=2)
-
-    # operate frame setup
-    pause_btn = tk.Button(
-        operate_frame, text="Resume" if is_paused else "Pause")
-    save_btn = tk.Button(operate_frame, text="Save Image")
-    exit_btn = tk.Button(operate_frame, text="Exit")
-    pause_btn.grid(column=0, row=0)
-    save_btn.grid(column=0, row=1)
-    exit_btn.grid(column=0, row=2)
-    pause_btn['command'] = pause_handler
-    save_btn['command'] = save_handler
-    exit_btn['command'] = exit_handler
-
+        str_label2['fg'] = 'SeaGreen2'
+    str_label1['text'] = frame_count_str
+    str_label2['text'] = detect_result_str
 
     # image showing setup
     img_pil = Image.fromarray(img_RGB)
@@ -170,9 +189,10 @@ def capture_stream():
     captured_frame.configure(image=img_tk)
     captured_frame.image = img_tk
 
-    window.after(10, capture_stream)
+    window.after(10 if not is_paused else 1000, capture_stream)
 
 
 capture_stream()
 window.mainloop()
 cv2.destroyAllWindows()
+

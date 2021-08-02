@@ -12,7 +12,7 @@ PREDICTION_LEN = 24 * 24 * 24  # grid_len * grid_len * yolo
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--port", help="specify the port of WE-1 Plus",
-                    dest="port", default="ttyUSB0")
+                    dest="port", default="/dev/ttyUSB0")
 parser.add_argument("-b", "--baud", help="specify the baud rate of transferring\
                      image and predictions",
                     dest="baud", default=921600)
@@ -23,11 +23,10 @@ parser.add_argument("-i", "--iou_thresh", help="specify the iou thresh of\
                     dest="iou_thresh", default=0.1)
 args = parser.parse_args()
 
-
 PORT = args.port
-BAUD_RATE = args.baud
-THRESH = args.thresh
-IOU_THRESH = args.iou_thresh
+BAUD_RATE = int(args.baud)
+THRESH = float(args.thresh)
+IOU_THRESH = float(args.iou_thresh)
 
 print("\nArguments used:\nPort: {},\t\tBaud rate: {}".format(
     PORT, BAUD_RATE))
@@ -87,8 +86,8 @@ def main():
                         if (len(byte_queue) == PREDICTION_LEN):
                             break
                     predictions = np.array(byte_queue, dtype=np.int8)
-                    img_RGB, result = get_bounding_boxes(data_array, predictions, count, THRESH,
-                                                         IOU_THRESH)
+                    img_RGB, result = get_bounding_boxes(
+                        data_array, predictions, count, THRESH, IOU_THRESH)
                     cv2.imshow('Detecting result', img_RGB)
                     key = cv2.waitKey(1)
                     # self_invoke(data_array)
