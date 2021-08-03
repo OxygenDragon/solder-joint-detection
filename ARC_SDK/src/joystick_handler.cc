@@ -35,13 +35,15 @@ void GetImageBias(int8_t joystick_state, int8_t* bias_x, int8_t* bias_y) {
   }
 }
 
-void JoystickSignalAck() {
-  char* return_str = "1,0,0,0,0,";
-  uint8_t return_str_int8[11];
-  for (int8_t i = 0; i < 11; ++i) {
-    return_str_int8[i] = (uint8_t)return_str[i];
+void JoystickSignalAck(int8_t need_return) {
+  if (need_return) {
+    char* return_str = "1,0,0,0,0,";
+    uint8_t return_str_int8[11];
+    for (int8_t i = 0; i < 11; ++i) {
+      return_str_int8[i] = (uint8_t)return_str[i];
+    }
+    hx_drv_share_switch(SHARE_MODE_I2CM); // start using I2C
+    // sending acknowledgement to aruduino through i2c
+    hx_drv_i2cm_set_data(ARDUINO_ADDR, NULL, 0, return_str_int8, 10);  
   }
-  hx_drv_share_switch(SHARE_MODE_I2CM); // start using I2C
-  // sending acknowledgement to aruduino through i2c
-  hx_drv_i2cm_set_data(ARDUINO_ADDR, NULL, 0, return_str_int8, 10);
 }

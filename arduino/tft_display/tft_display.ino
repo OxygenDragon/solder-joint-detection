@@ -1,6 +1,5 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7735.h>
-#include <Adafruit_ST7789.h>
 #include <Fonts/FreeSerif12pt7b.h>
 #include <Fonts/FreeSansBold9pt7b.h>
 #include <Fonts/FreeSans9pt7b.h>
@@ -34,8 +33,8 @@ unsigned long last;
 */
 int8_t current_joy_state = 0;
 int8_t state_set = 0;
-int8_t position_x = 0;
-int8_t position_y = 0;
+uint16_t position_x = 0;
+uint16_t position_y = 0;
 
 void setup(void) {
   
@@ -43,19 +42,19 @@ void setup(void) {
 
   tft.setRotation(1);
   tft.setCursor(5, 30);
-  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextColor(ST7735_WHITE);
   tft.setFont(&FreeSerif12pt7b);
   tft.print("Joint Detection");
   tft.setCursor(5, 60);
-  tft.setTextColor(ST77XX_RED);
+  tft.setTextColor(ST7735_RED);
   tft.setFont(&FreeSansBold9pt7b);
   tft.print("I2C Not Working");
   tft.setCursor(0, 80);
-  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextColor(ST7735_YELLOW);
   tft.setFont(&FreeSans9pt7b);
 
-  pinMode(VRX, INPUT);
-  pinMode(VRY, INPUT);
+  // pinMode(VRX, INPUT);
+  // pinMode(VRY, INPUT);
   pinMode(GPIO0, OUTPUT);
   pinMode(GPIO1, OUTPUT);
   pinMode(GPIO2, OUTPUT);
@@ -69,10 +68,11 @@ void setup(void) {
   last = millis();
 }
 
+// i2c received signal handler
 void receiveEvent(int numBytes){
   
   Serial.println("received");                                                                                                                                         
-  tft.fillScreen(0);
+  tft.fillScreen(ST7735_BLACK);
   int str_index = 0;
   int char_index = 0;
   
@@ -86,16 +86,16 @@ void receiveEvent(int numBytes){
       received_str[str_index][char_index++] = c;
     }
   }
+  
+  // acknowledge of joystick signal
   if (received_str[0][0] == '1') {
-    // acknoledge of joystick signal
     state_set = 0;
     current_joy_state = 0;
     return;
   }
-
-  has_defect = (received_str[1][0] == '1');
-
+  
   // decode received data to display strings
+  has_defect = (received_str[1][0] == '1');
   if (has_defect) {
     sprintf(display_str[0], "Defect detected!");
   } else {
@@ -111,33 +111,35 @@ void receiveEvent(int numBytes){
 void loop() {
   position_x = analogRead(VRX);
   position_y = analogRead(VRY);
+  Serial.print("VRX: ");
+  Serial.print(position_x);
+  Serial.print(" VRY: ");
+  Serial.println(position_y);
+  
   // determine joystick state
   if (!state_set) {
     current_joy_state = 0;
-    if (position_x > 1000) {
+    if (position_x > 950) {
       state_set = 1;
       current_joy_state = 1;
     }
-    if (position_x < 20) {
+    if (position_x < 70) {
       state_set = 1;
       current_joy_state = 2;
     }
-    if (position_y > 1000) {
+    if (position_y > 950) {
       state_set = 1;
       current_joy_state = 3;
     }
-    if (position_y < 20) {
+    if (position_y < 70) {
       state_set = 1;
       current_joy_state = 4;
     }
   }
+
+  // if state is set, keep sending signal until ack
   if (state_set) {
     switch (current_joy_state) {
-      case 0:
-       digitalWrite(GPIO0, LOW); 
-       digitalWrite(GPIO1, LOW); 
-       digitalWrite(GPIO2, LOW); 
-       break;
       case 1:
        digitalWrite(GPIO0, LOW); 
        digitalWrite(GPIO1, LOW); 

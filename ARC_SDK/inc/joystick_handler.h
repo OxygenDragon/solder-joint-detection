@@ -11,5 +11,7 @@ int8_t GetJoyStickState(hx_drv_gpio_config_t* gpio_0,
 
 // calculate new bias according to joystick state
 void GetImageBias(int8_t joystick_state, int8_t* bias_x, int8_t* bias_y);
-void JoystickSignalAck();
-#endif  // TENSORFLOW_LITE_MICRO_EXAMPLES_HANDWRITING_JOYSTICK_HANDLER_H_
+
+// return ack signal to arduino through i2c
+void JoystickSignalAck(int8_t need_return);
+#endif  // OXGENDRAGON_SOLDER_DETECTION_JOYSTICK_HANDLER_H_

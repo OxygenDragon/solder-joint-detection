@@ -6,4 +6,4 @@
 
 void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score);
 
-#endif  // TENSORFLOW_LITE_MICRO_EXAMPLES_HANDWRITING_RESPONDER_H_
+#endif  // OXYGENDRAGON_SOLDER_DETECTION_RESPONDER_H_

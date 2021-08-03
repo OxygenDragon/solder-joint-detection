@@ -94,7 +94,7 @@ void loop() {
   // get joystick status
   int8_t joystick_state = GetJoyStickState(&gpio_0, &gpio_1, &gpio_2);
   GetImageBias(joystick_state, &bias_x, &bias_y);
-  JoystickSignalAck();
+  JoystickSignalAck((joystick_state > 0));
 
   // Get image from provider
   if (kTfLiteOk != GetImage(error_reporter, kNumCols, kNumRows, kNumChannels,

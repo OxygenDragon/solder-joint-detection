@@ -55,11 +55,11 @@ void RespondToDetection(tflite::ErrorReporter* error_reporter, int8_t* score) {
       predict_count[2] != 0);
 
   // preparing result string to sent
-  // passed: 0,x,x,x
-  // not passed: 1,insufficient,short,too_much
+  // passed: 0,0,x,x,x
+  // not passed: 0,1,insufficient,short,too_much
   char result_str[20];
   uint8_t result_str_int8[20];
-  sprintf(result_str, "%d,%d,%d,%d,",
+  sprintf(result_str, "0,%d,%d,%d,%d,",
       has_defect_joint, predict_count[0], predict_count[1], predict_count[2]); 
 
   for (uint8_t i = 0; i < strlen(result_str); ++i) {
