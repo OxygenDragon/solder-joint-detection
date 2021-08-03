@@ -4,11 +4,6 @@
 #include "string"
 #include <cstring>
 namespace {
-char* className[] = {
-"Insufficient", 
-"Short",
-"Too much"
-};
 uint8_t ARDUINO_ADDR = 0x12;
 uint32_t int_buff;
 uint32_t int_part;
