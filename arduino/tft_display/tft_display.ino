@@ -89,11 +89,12 @@ void receiveEvent(int numBytes){
   
   // acknowledge of joystick signal
   if (received_str[0][0] == '1') {
+    Serial.println("ack received");
     state_set = 0;
     current_joy_state = 0;
     return;
   }
-  
+  Serial.println("display received");
   // decode received data to display strings
   has_defect = (received_str[1][0] == '1');
   if (has_defect) {
@@ -111,10 +112,6 @@ void receiveEvent(int numBytes){
 void loop() {
   position_x = analogRead(VRX);
   position_y = analogRead(VRY);
-  Serial.print("VRX: ");
-  Serial.print(position_x);
-  Serial.print(" VRY: ");
-  Serial.println(position_y);
   
   // determine joystick state
   if (!state_set) {
@@ -139,6 +136,7 @@ void loop() {
 
   // if state is set, keep sending signal until ack
   if (state_set) {
+    Serial.println(current_joy_state);
     switch (current_joy_state) {
       case 1:
        digitalWrite(GPIO0, LOW); 

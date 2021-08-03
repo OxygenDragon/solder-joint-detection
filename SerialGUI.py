@@ -11,7 +11,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # program parameters
-IMG_SIZE = (384, 384)
+IMG_SIZE = (192, 192)
 PREDICTION_LEN = 24 * 24 * 24  # grid_len * grid_len * yolo
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--port", help="specify the port of WE-1 Plus",
@@ -150,6 +150,10 @@ def capture_stream():
             if len(img_data) == IMG_SIZE[1]:
                 frame_count += 1
                 data_array = np.array(img_data, dtype=np.uint8)
+
+                # image upscaling
+                data_array = np.repeat(data_array, repeats=2, axis=0)
+                data_array = np.repeat(data_array, repeats=2, axis=1)
                 print("image transfer complete!")
 
                 # transfer predictions (transferred in int type)
@@ -195,4 +199,3 @@ def capture_stream():
 capture_stream()
 window.mainloop()
 cv2.destroyAllWindows()
-

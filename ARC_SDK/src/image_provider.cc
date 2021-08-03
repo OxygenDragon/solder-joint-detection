@@ -34,7 +34,10 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
   uint16_t height_delta = (480 - image_height) / 2;
   int8_t bias_val_x = bias_x * bias_weight;
   int8_t bias_val_y = bias_y * bias_weight;
+  int8_t row_send_signal = 1; // used for control which bytes to send
+  int8_t col_send_signal = 1; 
   uint32_t img_index = 0;	
+
   // start signal
   for (uint8_t i = 0; i < 10; ++i) {
     hx_drv_uart_print("7");
@@ -46,8 +49,11 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
       img_ptr[img_index] = *(((uint8_t*) g_pimg_config.raw_address) +
           i * 640 + j);
       // image transferring
-      hx_drv_uart_print("%c", img_ptr[img_index++]);
+      if (row_send_signal && col_send_signal)
+        hx_drv_uart_print("%c", img_ptr[img_index++]);
+      row_send_signal = !row_send_signal;
     }
+    col_send_signal = !col_send_signal;
   }
 
   // quantization input setup
