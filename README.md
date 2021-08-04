@@ -5,7 +5,7 @@
 We are group from NCKU CASLab undergraduate students. We are dedicate to solve the problem of solder joint detecting problem. Since inspecting solder joint defect by human eye is time consuming and low efficiency, we proposed a detection system combine with edge AI and computer. Our device could also work only with power supply and need no computer or laptop connect to it.  Hope this AIoT device could solve the problem people long encountered.
 
 <p align="center">
-<img src="./pictures/device.png" alt="board" width="400" align="center"/>
+<img src="./pictures/device.jpg" alt="board" width="400" align="center"/>
 </p> 
 <p align='center'>Device Image</p>
 
@@ -177,9 +177,9 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 
 ### Hardware results
 
-|              Result 1 (QC passed)              |           Result 2 (Defect detected)           |
+|              QC passed condition               |           Defect detected condition            |
 | :--------------------------------------------: | :--------------------------------------------: |
-| ![device-test-1](./pictures/device_test_1.jpg) | ![device-test-1](./pictures/device_test_2.jpg) |
+| ![device-test-1](./pictures/device_test_2.jpg) | ![device-test-1](./pictures/device_test_1.jpg) |
 
 ### Software results
 
