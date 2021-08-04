@@ -86,11 +86,11 @@ window.configure(bg='floral white')
 window.resizable(0, 0)  # not resizable
 
 captured_frame = tk.Label(
-    window, width=IMG_SIZE[0], height=IMG_SIZE[1], bg='white')
+    window, width=IMG_SIZE[0] * 2, height=IMG_SIZE[1] * 2, bg='white')
 message_frame = tk.Frame(
-    window, width=IMG_SIZE[0]/2, height=IMG_SIZE[1]/2, bg='white')
+    window, width=IMG_SIZE[0], height=IMG_SIZE[1], bg='white')
 operate_frame = tk.Frame(
-    window, width=IMG_SIZE[0]/2, height=IMG_SIZE[1]/2, bg='floral white')
+    window, width=IMG_SIZE[0], height=IMG_SIZE[1], bg='floral white')
 
 captured_frame.grid(column=0, row=0, padx=pad, pady=pad,
                     rowspan=2, sticky=align_mode)

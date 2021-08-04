@@ -19,16 +19,16 @@ void GetImageBias(int8_t joystick_state, int8_t* bias_x, int8_t* bias_y) {
     case 0:
       return;
     case 1: // up
-      *bias_x = (*bias_x == -6)? *bias_x : *bias_x - 1;
+      *bias_x = (*bias_x == -3)? *bias_x : *bias_x - 1;
       break;
     case 2: // down
-      *bias_x = (*bias_x == 6)? *bias_x : *bias_x + 1;
+      *bias_x = (*bias_x == 3)? *bias_x : *bias_x + 1;
       break;
     case 3: // left
-      *bias_y = (*bias_y == -16)? *bias_y : *bias_y - 1;
+      *bias_y = (*bias_y == -8)? *bias_y : *bias_y - 1;
       break;
     case 4: // right
-      *bias_y = (*bias_y == 16)? *bias_y : *bias_y + 1;
+      *bias_y = (*bias_y == 8)? *bias_y : *bias_y + 1;
       break;
     default:
       return;

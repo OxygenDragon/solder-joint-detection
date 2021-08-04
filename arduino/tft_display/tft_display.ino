@@ -103,7 +103,7 @@ void receiveEvent(int numBytes){
     sprintf(display_str[0], "QC PASSED !!!");
   }
   sprintf(display_str[1], "Short: %s", received_str[3]);
-  sprintf(display_str[2], "Excess", received_str[4]);
+  sprintf(display_str[2], "Excess: %s", received_str[4]);
   sprintf(display_str[3], "Poor filled: %s", received_str[2]);
 
   Serial.println(display_str[0]);
@@ -116,19 +116,19 @@ void loop() {
   // determine joystick state
   if (!state_set) {
     current_joy_state = 0;
-    if (position_x > 950) {
+    if (position_x < 70) {
       state_set = 1;
       current_joy_state = 1;
     }
-    if (position_x < 70) {
+    if (position_x > 950) {
       state_set = 1;
       current_joy_state = 2;
     }
-    if (position_y > 950) {
+    if (position_y < 70) {
       state_set = 1;
       current_joy_state = 3;
     }
-    if (position_y < 70) {
+    if (position_y > 950) {
       state_set = 1;
       current_joy_state = 4;
     }
