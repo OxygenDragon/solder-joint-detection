@@ -100,6 +100,7 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 - Note
 
   - If the scene is too dark for you, you could alway adjust the **variable resistor** on the board to adjust the light for better inferencing environment
+  - You could adjust the image region by controlling the joystick, the supported direction is *up*, *down*, *left*, *right*, with high threshold to glitch
 
 ## Hardware / Software Setup
 
@@ -176,9 +177,9 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 
 ### Hardware results
 
-|           Result 1 (Defect detected)            |              Result 2 (QC passed)               |
-| :---------------------------------------------: | :---------------------------------------------: |
-| ![device-test-1](./pictures/device_test_1.jpeg) | ![device-test-1](./pictures/device_test_2.jpeg) |
+|              Result 1 (QC passed)              |           Result 2 (Defect detected)           |
+| :--------------------------------------------: | :--------------------------------------------: |
+| ![device-test-1](./pictures/device_test_1.jpg) | ![device-test-1](./pictures/device_test_2.jpg) |
 
 ### Software results
 
@@ -188,7 +189,8 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 
 ### Time consumption breakdown
 
-- Get image (including transfer data to computer): 1.931 sec
+- Get Joystick state: 0.081 sec
+- Get image (including transfer data to computer): 0.536 sec
 - Invoke model: 0.575 sec
 - Predict results (including transfer data to computer): 0.749 sec
-- **Frames per minutes**: 18.5 frames
+- **Frames per minutes**: 30.9 frames
