@@ -17,7 +17,7 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 
 1. Compile and generate image file for uploading to Himax WE-I Plus EVB
 
-   Before started, make sure that `lrzsz` is installed in your computer
+   Before started, make sure that `lrzsz` and `tkinter` (often named as `python3-tk` in most disto) is installed in your computer
 
    ```bash
    $ cd himax_tflm && make downloads # download himax sdk
@@ -66,7 +66,7 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
   2. Use `pyserial` to receive messages from Himax
 
      ```bash
-     $ sudo python SerialOut.py
+     $ sudo python SerialGui.py
      
      usage: SerialOut.py [-h] [-p PORT] [-b BAUD] [-t THRESH] [-i IOU_THRESH]
      
@@ -85,11 +85,17 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 
   4. To save current inference picture, press `SPACE` to capture; to exit from the program, press `ESC`
 
+  5. GUI buttons are available to use, here are functions provided
+
+     1. *Pause*: pause image capturing, after the button is clicked, it will become *Resume* button
+     2. *Save*: save current inference result picture
+     3. *Exit*: exit program
+
 - Without computer / laptop
 
   1. Power up WE-I Plus and Arduino, one should see the QC test result from the TFT display, there were two results:
-     (1) **QC PASSED!** - indicates that there were no defected joint detected on the current frame
-     (2) **Defect detected!** - indicates that there might have some specification problems on the current frame, the amount of defected joints of each classes would also been shown 
+     1. **QC PASSED!** - indicates that there were no defected joint detected on the current frame
+     2. **Defect detected!** - indicates that there might have some specification problems on the current frame, the amount of defected joints of each classes would also been shown 
 
 - Note
 
@@ -104,6 +110,7 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
    - Himax WE-I Plus EVB - edge AI inference development board
    - Arduino Pro Mini - development board for decoding output from WE-I Plus and send to display
    - ST7735 - 1.8 inch TFT display for displaying basic information of current captured frame
+   - Joystick - Joystick module for controlling the position of interest image region
 
 2. Schematic Diagram
 
@@ -135,7 +142,7 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 
    - Implementations
 
-     Since the original yolov3-tiny model was too large to fit into the microcontroller, we have made some improvement on it to make it suitable for our project. Since the height of our device is fixed, the size of joints would be mostly the same, thus, we decided to prune off one of the branch of the model that is used for detecting large objects. And in order to make further improvement on the model size, we have make some of the filters smaller, the comparison with original yolov3-tiny is as the following table
+     Since the original yolov3-tiny model was too large to fit into the microcontroller, we have made some improvement on it to make it suitable for our project. Since the height of our device is fixed, the size of joints would be mostly the same, thus, we decided to prune off one of the branch of the model that is used for detecting larger objects. And in order to make further improvement on the model size, we have make some of the filters smaller, the comparison with original yolov3-tiny is as the following table
 
      |                     | yolov3-tiny optimized | yolov3-tiny original |
      | ------------------- | --------------------- | -------------------- |
@@ -148,7 +155,7 @@ We are group from NCKU CASLab undergraduate students. We are dedicate to solve t
 
    - Quantization
 
-     To further decrease the model size, we have do `int8` quantization to our model, the tflite model size has decrease from 591 KB to 164 KB with slightly accuracy loss.
+     To further decrease the model size and make it more suitable for hardware device, we have do `int8` quantization to our model, the tflite model size has decrease from 591 KB to 164 KB with slightly accuracy loss.
 
 2. Flow chart
 
