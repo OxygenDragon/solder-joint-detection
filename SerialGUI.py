@@ -1,7 +1,3 @@
-from utils.detection import get_bounding_boxes
-from utils.TfliteInference import self_invoke
-from time import gmtime, strftime
-from PIL import Image, ImageTk
 import serial
 import numpy as np
 import tkinter as tk
@@ -9,6 +5,10 @@ import cv2
 import argparse
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+from utils.detection import get_bounding_boxes
+from utils.TfliteInference import self_invoke
+from time import gmtime, strftime
+from PIL import Image, ImageTk
 
 # program parameters
 IMG_SIZE = (192, 192)
@@ -49,6 +49,7 @@ img_RGB = np.array([0])
 def pause_handler():
     global is_paused
     global status_str
+    global img_RGB
     is_paused = not is_paused
     if is_paused:
         status_str = "Image capture paused!"
@@ -56,6 +57,7 @@ def pause_handler():
     else:
         status_str = 'Image capture resumed'
         pause_btn['text'] = 'Pause'
+        img_RGB = np.array([0])
     str_label3['text'] = status_str
 
 
@@ -72,6 +74,7 @@ def save_handler():
 
 
 def exit_handler():
+    print("exit program...")
     exit(0)
 
 
@@ -81,7 +84,7 @@ align_mode = 'nswe'
 
 window = tk.Tk()
 window.title("Solder Joint Inspection")
-window.geometry("600x400")
+window.geometry("600x430")
 window.configure(bg='floral white')
 window.resizable(0, 0)  # not resizable
 
@@ -172,8 +175,11 @@ def capture_stream():
                     if (len(byte_queue) == PREDICTION_LEN):
                         break
                 predictions = np.array(byte_queue, dtype=np.int8)
-                img_RGB, has_defect = get_bounding_boxes(data_array, predictions,
-                                                         frame_count, THRESH, IOU_THRESH)
+                img_RGB, has_defect = get_bounding_boxes(data_array,
+                                                         predictions,
+                                                         frame_count,
+                                                         THRESH,
+                                                         IOU_THRESH)
                 break
 
     # message frame setup
